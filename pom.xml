@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>nl.ben221199</groupId>
+	<artifactId>wapi</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>8</source>
+					<target>8</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>jcenter</id>
+			<name>jcenter</name>
+			<url>https://jcenter.bintray.com</url>
+		</repository>
+		<repository>
+			<id>github.com/balena/ecdh-curve25519-java</id>
+			<url>https://github.com/balena/ecdh-curve25519-java</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
+	</repositories>
+
+	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.whispersystems</groupId>
+			<artifactId>signal-protocol-java</artifactId>
+			<version>2.3.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
+		<dependency>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java</artifactId>
+			<version>3.14.0</version>
+		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>com.github.rweather</groupId>-->
+<!--			<artifactId>noise-java</artifactId>-->
+<!--			<version>master-a8dce061f6-1</version>-->
+<!--		</dependency>-->
+	</dependencies>
+
+</project>
