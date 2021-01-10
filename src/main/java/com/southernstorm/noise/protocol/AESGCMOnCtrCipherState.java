@@ -298,7 +298,6 @@ class AESGCMOnCtrCipherState implements CipherState {
 		ghash.finish(iv, 0, 16);
 		int temp = 0;
 		for (int index = 0; index < 16; ++index){
-			System.err.println("[TEMP] "+hashKey[index]+"^"+iv[index]+"^"+ciphertext[ciphertextOffset + dataLen + index]+"|="+temp);
 			temp |= (hashKey[index] ^ iv[index] ^ ciphertext[ciphertextOffset + dataLen + index]);}
 		if ((temp & 0xFF) != 0)
 			Noise.throwBadTagException();

@@ -27,13 +27,14 @@ public class Main{
 	public static void main(String... args) throws IOException{
 		new TestServer().start();
 
-		String client_static_keypair = "<KEYPAIR>";
+		String client_static_keypair = "";
 
 		byte[] client_static_keypair_bytes = Base64.getDecoder().decode(client_static_keypair);
-		if(client_static_keypair_bytes.length!=64){
-			System.err.println("The 'client_static_keypair' isn't 64 bytes long");
-			return;
-		}
+		client_static_keypair_bytes = new byte[64];
+//		if(client_static_keypair_bytes.length!=64){
+//			System.err.println("The 'client_static_keypair' isn't 64 bytes long");
+//			return;
+//		}
 		byte[] priv_bytes = new byte[32];
 		System.arraycopy(client_static_keypair_bytes,0,priv_bytes,0,priv_bytes.length);
 		PrivateKey priv = new Curve25519PrivateKey(priv_bytes);
@@ -45,55 +46,62 @@ public class Main{
 		KeyPair kp = new KeyPair(pub,priv);
 
 		Socket s = new Socket("e7.whatsapp.net",443);
-	//	Socket s = new Socket("localhost",8443);
 		NoiseInputStream in = new NoiseInputStream(s.getInputStream());
 		NoiseOutputStream out = new NoiseOutputStream(s.getOutputStream());
 
-		Main.writeWhatsAppHeader(out);
+		HandshakeState hs = Main.createHandshakeState();
+		if(hs==null){
+			System.err.println("Failed to create handshake state");
+			return;
+		}
 
-		//Main.writeHandshakeIK(kp,in,out);
-		CipherStatePair cipherStates = Main.writeHandshakeXX(kp,in,out);
+		Main.writeWhatsAppHeader(hs,out);
+
+		CipherStatePair cipherStates = Main.writeHandshakeXX(hs,in,out);
 		if(cipherStates==null){
-			System.err.println("HANDSHAKE FAILS");
+			System.err.println("Failed to perform handshake");
 			return;
 		}
 
 		in.setCipherState(cipherStates.getReceiver());
 		out.setCipherState(cipherStates.getSender());
 
-		out.writeEncryptedSegment("HOI".getBytes());
+		//out.writeEncryptedSegment("HOI".getBytes());
 
 		//while(in.available()==0);
 
+		//This is FunXMPP
 		byte[] o = in.readDecryptedSegment();
 		System.out.println("From server = "+new String(o));
 	}
 
-	private static void writeWhatsAppHeader(NoiseOutputStream sos) throws IOException{
-		sos.write("WA".getBytes());
-		sos.write(new byte[]{(byte) Main.MAJOR, (byte) Main.MINOR});
-		sos.flush();
-	}
-
-	private static CipherStatePair writeHandshakeXX(KeyPair kp,NoiseInputStream in,NoiseOutputStream out) throws IOException{
+	private static HandshakeState createHandshakeState(){
 		HandshakeState hs = null;
 		try{
-			//Noise.setForceFallbacks(true);
 			hs = new HandshakeState("Noise_XX_25519_AESGCM_SHA256",HandshakeState.INITIATOR);
 		}catch(NoSuchAlgorithmException e){
 			e.printStackTrace();
 		}
-		if(hs==null){
-			return null;
-		}
+		return hs;
+	}
+
+	private static void writeWhatsAppHeader(HandshakeState hs,NoiseOutputStream sos) throws IOException{
+		byte[] WA = new byte[]{(byte)'W',(byte)'A',(byte) Main.MAJOR,(byte) Main.MINOR};
+		sos.write(WA);
+		hs.setPrologue(WA,0,WA.length);
+		sos.flush();
+	}
+
+	private static CipherStatePair writeHandshakeXX(HandshakeState hs,NoiseInputStream in,NoiseOutputStream out) throws IOException{
 		if(hs.needsLocalKeyPair()){
 			hs.getLocalKeyPair().generateKeyPair();
 //			hs.getLocalKeyPair().setPublicKey(kp.getPublic().getEncoded(),0);
 //			hs.getLocalKeyPair().setPrivateKey(kp.getPrivate().getEncoded(),0);
-			System.out.println("[PUBL] "+bytesToHex(kp.getPublic().getEncoded()));
-			System.out.println("[PRIV] "+bytesToHex(kp.getPrivate().getEncoded()));
+//			System.out.println("[PUBL] "+bytesToHex(kp.getPublic().getEncoded()));
+//			System.out.println("[PRIV] "+bytesToHex(kp.getPrivate().getEncoded()));
 //			System.err.println(hs.getLocalKeyPair().generateKeyPair());
 		}
+		hs.setPrologue(new byte[]{(byte)'W',(byte)'A',0x04,0x00},0,4);
 		hs.start();
 
 		System.out.println("[Action] "+hs.getAction());
@@ -148,19 +156,25 @@ public class Main{
 
 		System.out.println("[Action] "+hs.getAction());
 		// => s, se
-		byte[] buffer2 = new byte[169];
+		byte[] buffer2 = new byte[1000];
 		byte[] client_finish_payload = Main.getConfig().toByteArray();
-		int client_finish_length = 0;
+		client_finish_payload = new byte[]{(byte)0x08,(byte)0xFA,(byte)0x9D,(byte)0xFE,(byte)0xF7,(byte)0x2C,(byte)0x18,(byte)0x01,(byte)0x2A,(byte)0x94,(byte)0x01,(byte)0x08,(byte)0x00,(byte)0x12,(byte)0x06,(byte)0x08,(byte)0x02,(byte)0x10,(byte)0x13,(byte)0x18,(byte)0x33,(byte)0x1A,(byte)0x03,(byte)0x30,(byte)0x30,(byte)0x30,(byte)0x22,(byte)0x03,(byte)0x30,(byte)0x30,(byte)0x30,(byte)0x2A,(byte)0x05,(byte)0x38,(byte)0x2E,(byte)0x30,(byte)0x2E,(byte)0x30,(byte)0x32,(byte)0x07,(byte)0x73,(byte)0x61,(byte)0x6D,(byte)0x73,(byte)0x75,(byte)0x6E,(byte)0x67,(byte)0x3A,(byte)0x08,(byte)0x73,(byte)0x74,(byte)0x61,(byte)0x72,(byte)0x32,(byte)0x6C,(byte)0x74,(byte)0x65,(byte)0x42,(byte)0x36,(byte)0x73,(byte)0x74,(byte)0x61,(byte)0x72,(byte)0x32,(byte)0x6C,(byte)0x74,(byte)0x65,(byte)0x78,(byte)0x78,(byte)0x2D,(byte)0x75,(byte)0x73,(byte)0x65,(byte)0x72,(byte)0x20,(byte)0x38,(byte)0x2E,(byte)0x30,(byte)0x2E,(byte)0x30,(byte)0x20,(byte)0x52,(byte)0x31,(byte)0x36,(byte)0x4E,(byte)0x57,(byte)0x20,(byte)0x47,(byte)0x39,(byte)0x36,(byte)0x35,(byte)0x46,(byte)0x58,(byte)0x58,(byte)0x55,(byte)0x31,(byte)0x41,(byte)0x52,(byte)0x43,(byte)0x43,(byte)0x20,(byte)0x72,(byte)0x65,(byte)0x6C,(byte)0x65,(byte)0x61,(byte)0x73,(byte)0x65,(byte)0x2D,(byte)0x6B,(byte)0x65,(byte)0x79,(byte)0x73,(byte)0x4A,(byte)0x24,(byte)0x61,(byte)0x65,(byte)0x65,(byte)0x66,(byte)0x65,(byte)0x36,(byte)0x61,(byte)0x30,(byte)0x2D,(byte)0x39,(byte)0x31,(byte)0x33,(byte)0x38,(byte)0x2D,(byte)0x34,(byte)0x31,(byte)0x32,(byte)0x63,(byte)0x2D,(byte)0x62,(byte)0x66,(byte)0x38,(byte)0x61,(byte)0x2D,(byte)0x39,(byte)0x32,(byte)0x62,(byte)0x64,(byte)0x33,(byte)0x30,(byte)0x65,(byte)0x34,(byte)0x62,(byte)0x32,(byte)0x35,(byte)0x32,(byte)0x5A,(byte)0x02,(byte)0x65,(byte)0x6E,(byte)0x62,(byte)0x02,(byte)0x55,(byte)0x53,(byte)0x3A,(byte)0x0A,(byte)0x63,(byte)0x6F,(byte)0x6E,(byte)0x73,(byte)0x6F,(byte)0x6E,(byte)0x61,(byte)0x6E,(byte)0x63,(byte)0x65,(byte)0x4D,(byte)0x0D,(byte)0xE4,(byte)0x7B,(byte)0x99,(byte)0x50,(byte)0x01,(byte)0x60,(byte)0x01};
 		System.out.println("<> "+bytesToHex(client_finish_payload));
+		int client_finish_length = 0;
 		try{
 			client_finish_length = hs.writeMessage(buffer2,0,client_finish_payload,0,client_finish_payload.length);
 		}catch(ShortBufferException e){
 			e.printStackTrace();
 		}
 		System.out.println("<> "+bytesToHex(buffer2));
+
+		byte[] staticBytes = ByteString.copyFrom(buffer2).substring(0,48).toByteArray();
+		byte[] payloadBytes = ByteString.copyFrom(buffer2).substring(48,client_finish_length).toByteArray();
+		System.out.println("PP "+client_finish_payload.length+" & "+payloadBytes.length);
+
 		WhatsProtos.HandshakeMessage.ClientFinish client_finish = WhatsProtos.HandshakeMessage.ClientFinish.newBuilder()
-				.setStatic(ByteString.copyFrom(buffer2).substring(0,48))
-				.setPayload(ByteString.copyFrom(buffer2).substring(48,client_finish_length))
+				.setStatic(ByteString.copyFrom(staticBytes))
+				.setPayload(ByteString.copyFrom(payloadBytes))
 				.build();
 		byte[] buf = new byte[32];
 		hs.getLocalKeyPair().getPublicKey(buf,0);

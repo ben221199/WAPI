@@ -17,10 +17,11 @@ public class SegmentInputStream extends InputStream{
 	}
 
 	public int readInt24BE() throws IOException{
-		int a = this.read() << 16;
-		int b = this.read() << 8;
-		int c = this.read() << 0;
-		return a | b | c;
+		int a = this.read();
+		int b = this.read();
+		int c = this.read();
+
+		return (a<< 16) | (b<<8) | (c<<0);
 	}
 
 	public byte[] readSegment() throws IOException{
