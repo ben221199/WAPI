@@ -25,8 +25,6 @@ public class Main{
 	private static final int MINOR = 0;
 
 	public static void main(String... args) throws IOException{
-		new TestServer().start();
-
 		String client_static_keypair = "";
 
 		byte[] client_static_keypair_bytes = Base64.getDecoder().decode(client_static_keypair);
@@ -46,8 +44,8 @@ public class Main{
 		KeyPair kp = new KeyPair(pub,priv);
 
 		Socket s = new Socket("e7.whatsapp.net",443);
-		NoiseInputStream in = new NoiseInputStream(s.getInputStream());
-		NoiseOutputStream out = new NoiseOutputStream(s.getOutputStream());
+		FunInputStream in = new FunInputStream(s.getInputStream());
+		FunOutputStream out = new FunOutputStream(s.getOutputStream());
 
 		HandshakeState hs = Main.createHandshakeState();
 		if(hs==null){
@@ -66,13 +64,8 @@ public class Main{
 		in.setCipherState(cipherStates.getReceiver());
 		out.setCipherState(cipherStates.getSender());
 
-		//out.writeEncryptedSegment("HOI".getBytes());
-
-		//while(in.available()==0);
-
-		//This is FunXMPP
-		byte[] o = in.readDecryptedSegment();
-		System.out.println("From server = "+new String(o));
+		String xml = in.readXML();
+		System.out.println("From server = "+xml);
 	}
 
 	private static HandshakeState createHandshakeState(){
@@ -90,6 +83,7 @@ public class Main{
 		sos.write(WA);
 		hs.setPrologue(WA,0,WA.length);
 		sos.flush();
+		FunXMPP.setVersion(Main.MAJOR,Main.MINOR);
 	}
 
 	private static CipherStatePair writeHandshakeXX(HandshakeState hs,NoiseInputStream in,NoiseOutputStream out) throws IOException{
@@ -101,7 +95,6 @@ public class Main{
 //			System.out.println("[PRIV] "+bytesToHex(kp.getPrivate().getEncoded()));
 //			System.err.println(hs.getLocalKeyPair().generateKeyPair());
 		}
-		hs.setPrologue(new byte[]{(byte)'W',(byte)'A',0x04,0x00},0,4);
 		hs.start();
 
 		System.out.println("[Action] "+hs.getAction());
