@@ -5,16 +5,21 @@ import br.eti.balena.security.ecdh.curve25519.Curve25519PublicKey;
 
 import com.google.protobuf.ByteString;
 import com.southernstorm.noise.protocol.CipherStatePair;
+import com.southernstorm.noise.protocol.DHState;
 import com.southernstorm.noise.protocol.HandshakeState;
+import com.southernstorm.noise.protocol.Noise;
 import com.whatsapp.protobuf.WhatsProtos;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.net.URLEncoder;
 import java.security.KeyPair;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Base64;
+import java.util.Random;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.ShortBufferException;
@@ -24,11 +29,115 @@ public class Main{
 	private static final int MAJOR = 4;
 	private static final int MINOR = 0;
 
+	public static String _SIGNATURE = "MIIDMjCCAvCgAwIBAgIETCU2pDALBgcqhkjOOAQDBQAwfDELMAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWExFDASBgNV" +
+			"BAcTC1NhbnRhIENsYXJhMRYwFAYDVQQKEw1XaGF0c0FwcCBJbmMuMRQwEgYDVQQLEwtFbmdpbmVlcmluZzEUMBIGA1UEAxMLQnJ" +
+			"pYW4gQWN0b24wHhcNMTAwNjI1MjMwNzE2WhcNNDQwMjE1MjMwNzE2WjB8MQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5" +
+			"pYTEUMBIGA1UEBxMLU2FudGEgQ2xhcmExFjAUBgNVBAoTDVdoYXRzQXBwIEluYy4xFDASBgNVBAsTC0VuZ2luZWVyaW5nMRQwEg" +
+			"YDVQQDEwtCcmlhbiBBY3RvbjCCAbgwggEsBgcqhkjOOAQBMIIBHwKBgQD9f1OBHXUSKVLfSpwu7OTn9hG3UjzvRADDHj+AtlEm" +
+			"aUVdQCJR+1k9jVj6v8X1ujD2y5tVbNeBO4AdNG/yZmC3a5lQpaSfn+gEexAiwk+7qdf+t8Yb+DtX58aophUPBPuD9tPFHsMCN" +
+			"VQTWhaRMvZ1864rYdcq7/IiAxmd0UgBxwIVAJdgUI8VIwvMspK5gqLrhAvwWBz1AoGBAPfhoIXWmz3ey7yrXDa4V7l5lK+7+jr" +
+			"qgvlXTAs9B4JnUVlXjrrUWU/mcQcQgYC0SRZxI+hMKBYTt88JMozIpuE8FnqLVHyNKOCjrh4rs6Z1kW6jfwv6ITVi8ftiegEkO" +
+			"8yk8b6oUZCJqIPf4VrlnwaSi2ZegHtVJWQBTDv+z0kqA4GFAAKBgQDRGYtLgWh7zyRtQainJfCpiaUbzjJuhMgo4fVWZIvXHaS" +
+			"HBU1t5w//S0lDK2hiqkj8KpMWGywVov9eZxZy37V26dEqr/c2m5qZ0E+ynSu7sqUD7kGx/zeIcGT0H+KAVgkGNQCo5Uc0koLRW" +
+			"YHNtYoIvt5R3X6YZylbPftF/8ayWTALBgcqhkjOOAQDBQADLwAwLAIUAKYCp0d6z4QQdyN74JDfQ2WCyi8CFDUM4CaNB+ceVXd" +
+			"KtOrNTQcc0e+t";
+
+//	public static String _MD5_CLASSES = "sRhBbr747oSPJ1wpla3joQ==";
+//	public static String _MD5_CLASSES = "yk7z7GBLIXbDAGfZLASCKQ==";
+	public static String _MD5_CLASSES = "oEYGYTr+K6IN0mDOrAZpsg==";
+
+	public static String _KEY = "eQV5aq/Cg63Gsq1sshN9T3gh+UUp0wIw0xgHYT1bnCjEqOJQKCRrWxdAe2yvsDeCJL+Y4G3PRD2HUF7oUgiGo8vGlNJOaux26k+A2F3hj8A=";
+
+	public static String getAndroidToken(String phoneNumber){
+		byte[] keyDecoded = Base64.getDecoder().decode(Main._KEY);
+		byte[] sigDecoded = Base64.getDecoder().decode(Main._SIGNATURE);
+		byte[] clsDecoded = Base64.getDecoder().decode(Main._MD5_CLASSES);
+
+		byte[] data = ByteString.copyFrom(sigDecoded).concat(ByteString.copyFrom(clsDecoded)).concat(ByteString.copyFrom(phoneNumber.getBytes())).toByteArray();
+
+		byte[] opad = new byte[64];
+		byte[] ipad = new byte[64];
+		for(int i=0;i<64;i++){
+			opad[i] = (byte) (0x5C ^ keyDecoded[i]);
+			ipad[i] = (byte) (0x36 ^ keyDecoded[i]);
+		}
+		MessageDigest hash;
+		MessageDigest subHash;
+		try{
+			hash = MessageDigest.getInstance("SHA1");
+			subHash = MessageDigest.getInstance("SHA1");
+		}catch(NoSuchAlgorithmException e){
+			return null;
+		}
+		subHash.update(ByteString.copyFrom(ipad).concat(ByteString.copyFrom(data)).toByteArray());
+		hash.update(ByteString.copyFrom(opad).concat(ByteString.copyFrom(subHash.digest())).toByteArray());
+		String result = Base64.getEncoder().encodeToString(hash.digest());
+		return result;
+	}
+
+	public static String getNokiaToken(String phoneNumber){
+		String $const = "PdA2DJyKoUrwLw1Bg6EIhzh502dF9noR9uFCllGk";
+		String releaseTime = "1452554789539"; // 2.13.30
+		MessageDigest md5 = null;
+		try{
+			md5 = MessageDigest.getInstance("MD5");
+		}catch(NoSuchAlgorithmException e){
+			return null;
+		}
+		md5.update(($const+releaseTime+phoneNumber).getBytes());
+		return Main.bytesToHex(md5.digest());
+	}
+
 	public static void main(String... args) throws IOException{
-		String client_static_keypair = "";
+//		DHState dh = null;
+//		try {
+//			dh = Noise.createDH("25519");
+//			dh.generateKeyPair();
+//		} catch (NoSuchAlgorithmException e) {
+//			e.printStackTrace();
+//		}
+//
+//		byte[] buf = new byte[32];
+//		dh.getPublicKey(buf,0);
+//
+//		byte[] id = new byte[20];
+//		new Random().nextBytes(id);
+//
+//		System.err.println(Verification.exist(
+//				"cc="+31,
+//				"in="+612322954L,
+//				"lg=en",
+//				"lc=GB",
+//				"mistyped=6",
+//				"authkey="+URLEncoder.encode(Base64.getEncoder().encodeToString(buf)),
+//
+////				"e_regid="+"AbxbLA",//+self.b64encode(struct.pack('>I', self._axolotlmanager.registration_id))),
+////				"e_keytype="+URLEncoder.encode(Base64.getEncoder().encodeToString(new byte[]{0x05})),//+self.b64encode(b"\x05")),
+////				"e_ident="+"%5fP0uapdTA8Fb7gpSiz18FTGRL8vZeQqNmKKwPQveKk0",//+self.b64encode(self._axolotlmanager.identity.publicKey.serialize()[1:])),
+////
+//////		signedprekey = self._axolotlmanager.load_latest_signed_prekey(generate=True)
+////				"e_skey_id="+"AAAA",//+self.b64encode(struct.pack('>I', signedprekey.getId())[1:]))
+////				"e_skey_val="+"Xqk7CrPs1e%2dNfUQT2830fHxirbUXqPTalICYICuMJS4",// self.b64encode(signedprekey.getKeyPair().publicKey.serialize()[1:]))
+////				"e_skey_sig="+"EvqIbddra2cRKYxeUC9uKn41V1amhfDUxdxzh88TJ4hg8XnE5qH5dwm4AgvPrixCx7TBw8GdDdh1%5fMi6Wn8JCQ",// self.b64encode(signedprekey.getSignature()))
+//
+//				"fdid="+URLEncoder.encode("f6dda44c-00b9-4002-b148-4e5bf47fdc37"),// config.fdid)
+//				"expid="+URLEncoder.encode("M4vp4iFIQ5y1EK/xUI65jA=="),// self.b64encode(config.expid))
+//
+//				"network_radio_type="+1,// "1")
+//				"simnum="+1,//, "1")
+//				"hasinrc=",//, "1")
+//				"pid=",//, int(random.uniform(100, 9999)))
+//				"rc="+0,//, 0)
+////		if self._config.id:
+//				"id="+URLEncoder.encode(new String(id)),//"%fb%ac0%ce%ee%1db%b4%045%21%1f%3aA%c1%97%87%9cAn",//+ self._config.id
+//				"token="+URLEncoder.encode(getAndroidToken("9633817594"))));
+//
+//		System.exit(0);
+
+		String client_static_keypair = "8ICKJ4El/hz53zjqqNfe/QcQWcpPxyB27hFsjCdqD2jbkTGZYumV60+QhvKWemRFalgpJkJmAreqObBaRq7NAQ==";
 
 		byte[] client_static_keypair_bytes = Base64.getDecoder().decode(client_static_keypair);
-		client_static_keypair_bytes = new byte[64];
+		//client_static_keypair_bytes = new byte[64];
 //		if(client_static_keypair_bytes.length!=64){
 //			System.err.println("The 'client_static_keypair' isn't 64 bytes long");
 //			return;
@@ -41,8 +150,6 @@ public class Main{
 		System.arraycopy(client_static_keypair_bytes,32,pub_bytes,0,pub_bytes.length);
 		PublicKey pub = new Curve25519PublicKey(pub_bytes);
 
-		KeyPair kp = new KeyPair(pub,priv);
-
 		Socket s = new Socket("e7.whatsapp.net",443);
 		FunInputStream in = new FunInputStream(s.getInputStream());
 		FunOutputStream out = new FunOutputStream(s.getOutputStream());
@@ -52,8 +159,21 @@ public class Main{
 			System.err.println("Failed to create handshake state");
 			return;
 		}
+//		hs.getFixedHybridKey()
+
+//		hs.key(pub_bytes,0,pub_bytes.length);
 
 		Main.writeWhatsAppHeader(hs,out);
+
+		if(hs.needsLocalKeyPair()){
+			hs.getLocalKeyPair().generateKeyPair();
+//			hs.getLocalKeyPair().setPublicKey(pub.getEncoded(),0);
+//			hs.getLocalKeyPair().setPrivateKey(priv.getEncoded(),0);
+//			System.out.println("[PUBL] "+bytesToHex(kp.getPublic().getEncoded()));
+//			System.out.println("[PRIV] "+bytesToHex(kp.getPrivate().getEncoded()));
+//			System.err.println(hs.getLocalKeyPair().generateKeyPair());
+		}
+		hs.start();
 
 		CipherStatePair cipherStates = Main.writeHandshakeXX(hs,in,out);
 		if(cipherStates==null){
@@ -66,6 +186,12 @@ public class Main{
 
 		String xml = in.readXML();
 		System.out.println("From server = "+xml);
+
+		out.writeEncryptedSegment(new byte[]{0x56});
+		out.flush();
+
+		String xml2 = in.readXML();
+		System.out.println("From server = "+xml2);
 	}
 
 	private static HandshakeState createHandshakeState(){
@@ -87,16 +213,6 @@ public class Main{
 	}
 
 	private static CipherStatePair writeHandshakeXX(HandshakeState hs,NoiseInputStream in,NoiseOutputStream out) throws IOException{
-		if(hs.needsLocalKeyPair()){
-			hs.getLocalKeyPair().generateKeyPair();
-//			hs.getLocalKeyPair().setPublicKey(kp.getPublic().getEncoded(),0);
-//			hs.getLocalKeyPair().setPrivateKey(kp.getPrivate().getEncoded(),0);
-//			System.out.println("[PUBL] "+bytesToHex(kp.getPublic().getEncoded()));
-//			System.out.println("[PRIV] "+bytesToHex(kp.getPrivate().getEncoded()));
-//			System.err.println(hs.getLocalKeyPair().generateKeyPair());
-		}
-		hs.start();
-
 		System.out.println("[Action] "+hs.getAction());
 		byte[] buffer = new byte[1024*8];
 		byte[] client_hello_payload = new byte[0];
@@ -151,7 +267,7 @@ public class Main{
 		// => s, se
 		byte[] buffer2 = new byte[1000];
 		byte[] client_finish_payload = Main.getConfig().toByteArray();
-		client_finish_payload = new byte[]{(byte)0x08,(byte)0xFA,(byte)0x9D,(byte)0xFE,(byte)0xF7,(byte)0x2C,(byte)0x18,(byte)0x01,(byte)0x2A,(byte)0x94,(byte)0x01,(byte)0x08,(byte)0x00,(byte)0x12,(byte)0x06,(byte)0x08,(byte)0x02,(byte)0x10,(byte)0x13,(byte)0x18,(byte)0x33,(byte)0x1A,(byte)0x03,(byte)0x30,(byte)0x30,(byte)0x30,(byte)0x22,(byte)0x03,(byte)0x30,(byte)0x30,(byte)0x30,(byte)0x2A,(byte)0x05,(byte)0x38,(byte)0x2E,(byte)0x30,(byte)0x2E,(byte)0x30,(byte)0x32,(byte)0x07,(byte)0x73,(byte)0x61,(byte)0x6D,(byte)0x73,(byte)0x75,(byte)0x6E,(byte)0x67,(byte)0x3A,(byte)0x08,(byte)0x73,(byte)0x74,(byte)0x61,(byte)0x72,(byte)0x32,(byte)0x6C,(byte)0x74,(byte)0x65,(byte)0x42,(byte)0x36,(byte)0x73,(byte)0x74,(byte)0x61,(byte)0x72,(byte)0x32,(byte)0x6C,(byte)0x74,(byte)0x65,(byte)0x78,(byte)0x78,(byte)0x2D,(byte)0x75,(byte)0x73,(byte)0x65,(byte)0x72,(byte)0x20,(byte)0x38,(byte)0x2E,(byte)0x30,(byte)0x2E,(byte)0x30,(byte)0x20,(byte)0x52,(byte)0x31,(byte)0x36,(byte)0x4E,(byte)0x57,(byte)0x20,(byte)0x47,(byte)0x39,(byte)0x36,(byte)0x35,(byte)0x46,(byte)0x58,(byte)0x58,(byte)0x55,(byte)0x31,(byte)0x41,(byte)0x52,(byte)0x43,(byte)0x43,(byte)0x20,(byte)0x72,(byte)0x65,(byte)0x6C,(byte)0x65,(byte)0x61,(byte)0x73,(byte)0x65,(byte)0x2D,(byte)0x6B,(byte)0x65,(byte)0x79,(byte)0x73,(byte)0x4A,(byte)0x24,(byte)0x61,(byte)0x65,(byte)0x65,(byte)0x66,(byte)0x65,(byte)0x36,(byte)0x61,(byte)0x30,(byte)0x2D,(byte)0x39,(byte)0x31,(byte)0x33,(byte)0x38,(byte)0x2D,(byte)0x34,(byte)0x31,(byte)0x32,(byte)0x63,(byte)0x2D,(byte)0x62,(byte)0x66,(byte)0x38,(byte)0x61,(byte)0x2D,(byte)0x39,(byte)0x32,(byte)0x62,(byte)0x64,(byte)0x33,(byte)0x30,(byte)0x65,(byte)0x34,(byte)0x62,(byte)0x32,(byte)0x35,(byte)0x32,(byte)0x5A,(byte)0x02,(byte)0x65,(byte)0x6E,(byte)0x62,(byte)0x02,(byte)0x55,(byte)0x53,(byte)0x3A,(byte)0x0A,(byte)0x63,(byte)0x6F,(byte)0x6E,(byte)0x73,(byte)0x6F,(byte)0x6E,(byte)0x61,(byte)0x6E,(byte)0x63,(byte)0x65,(byte)0x4D,(byte)0x0D,(byte)0xE4,(byte)0x7B,(byte)0x99,(byte)0x50,(byte)0x01,(byte)0x60,(byte)0x01};
+		//client_finish_payload = new byte[]{(byte)0x08,(byte)0xFA,(byte)0x9D,(byte)0xFE,(byte)0xF7,(byte)0x2C,(byte)0x18,(byte)0x01,(byte)0x2A,(byte)0x94,(byte)0x01,(byte)0x08,(byte)0x00,(byte)0x12,(byte)0x06,(byte)0x08,(byte)0x02,(byte)0x10,(byte)0x13,(byte)0x18,(byte)0x33,(byte)0x1A,(byte)0x03,(byte)0x30,(byte)0x30,(byte)0x30,(byte)0x22,(byte)0x03,(byte)0x30,(byte)0x30,(byte)0x30,(byte)0x2A,(byte)0x05,(byte)0x38,(byte)0x2E,(byte)0x30,(byte)0x2E,(byte)0x30,(byte)0x32,(byte)0x07,(byte)0x73,(byte)0x61,(byte)0x6D,(byte)0x73,(byte)0x75,(byte)0x6E,(byte)0x67,(byte)0x3A,(byte)0x08,(byte)0x73,(byte)0x74,(byte)0x61,(byte)0x72,(byte)0x32,(byte)0x6C,(byte)0x74,(byte)0x65,(byte)0x42,(byte)0x36,(byte)0x73,(byte)0x74,(byte)0x61,(byte)0x72,(byte)0x32,(byte)0x6C,(byte)0x74,(byte)0x65,(byte)0x78,(byte)0x78,(byte)0x2D,(byte)0x75,(byte)0x73,(byte)0x65,(byte)0x72,(byte)0x20,(byte)0x38,(byte)0x2E,(byte)0x30,(byte)0x2E,(byte)0x30,(byte)0x20,(byte)0x52,(byte)0x31,(byte)0x36,(byte)0x4E,(byte)0x57,(byte)0x20,(byte)0x47,(byte)0x39,(byte)0x36,(byte)0x35,(byte)0x46,(byte)0x58,(byte)0x58,(byte)0x55,(byte)0x31,(byte)0x41,(byte)0x52,(byte)0x43,(byte)0x43,(byte)0x20,(byte)0x72,(byte)0x65,(byte)0x6C,(byte)0x65,(byte)0x61,(byte)0x73,(byte)0x65,(byte)0x2D,(byte)0x6B,(byte)0x65,(byte)0x79,(byte)0x73,(byte)0x4A,(byte)0x24,(byte)0x61,(byte)0x65,(byte)0x65,(byte)0x66,(byte)0x65,(byte)0x36,(byte)0x61,(byte)0x30,(byte)0x2D,(byte)0x39,(byte)0x31,(byte)0x33,(byte)0x38,(byte)0x2D,(byte)0x34,(byte)0x31,(byte)0x32,(byte)0x63,(byte)0x2D,(byte)0x62,(byte)0x66,(byte)0x38,(byte)0x61,(byte)0x2D,(byte)0x39,(byte)0x32,(byte)0x62,(byte)0x64,(byte)0x33,(byte)0x30,(byte)0x65,(byte)0x34,(byte)0x62,(byte)0x32,(byte)0x35,(byte)0x32,(byte)0x5A,(byte)0x02,(byte)0x65,(byte)0x6E,(byte)0x62,(byte)0x02,(byte)0x55,(byte)0x53,(byte)0x3A,(byte)0x0A,(byte)0x63,(byte)0x6F,(byte)0x6E,(byte)0x73,(byte)0x6F,(byte)0x6E,(byte)0x61,(byte)0x6E,(byte)0x63,(byte)0x65,(byte)0x4D,(byte)0x0D,(byte)0xE4,(byte)0x7B,(byte)0x99,(byte)0x50,(byte)0x01,(byte)0x60,(byte)0x01};
 		System.out.println("<> "+bytesToHex(client_finish_payload));
 		int client_finish_length = 0;
 		try{
@@ -200,25 +316,25 @@ public class Main{
 				.setPrimary(2)
 				.setSecondary(20)
 				.setTertiary(206)
-				//.setQuaternary(22)
+				.setQuaternary(22)
 				.build();
 
 		WhatsProtos.ClientPayload.UserAgent userAgent = WhatsProtos.ClientPayload.UserAgent.newBuilder()
 				.setPlatform(WhatsProtos.ClientPayload.UserAgent.Platform.ANDROID)
-				.setMcc("0122")
-				.setMnc("334534")
+				//.setMcc("12")
+				//.setMnc("334534")
 				.setOsVersion("1.2.3.4")
 				.setManufacturer("Droid")
 				.setDevice("S5")
 				.setOsBuildNumber("1.0.5")
-				.setPhoneId("123663")
+				.setPhoneId("79033778355")
 				.setLocaleLanguageIso6391("nl")
 				.setLocalCountryIso31661Alpha2("NL")
 				.setAppVersion(appVersion)
 				.build();
 
 		return WhatsProtos.ClientPayload.newBuilder()
-				.setUsername(31612322954L)
+				.setUsername(79033778355L)
 				.setPassive(true)
 				.setPushName("H_____________OI")
 				.setSessionId(5)
