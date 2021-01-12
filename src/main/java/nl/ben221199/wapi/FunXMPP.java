@@ -1,12 +1,17 @@
 package nl.ben221199.wapi;
 
-import nl.ben221199.wapi.protocol.WA40;
-import org.apache.commons.text.StringEscapeUtils;
-
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import nl.ben221199.wapi.protocol.WA40;
+
+import org.apache.commons.text.StringEscapeUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
 
 public class FunXMPP{
 
@@ -33,13 +38,20 @@ public class FunXMPP{
 		return null;
 	}
 
-	public static byte[] encode(FunXMPP.Node xml){
-		return new byte[0];
+	public static byte[] encode(String xml){
+		FunXMPP.Node node = FunXMPP.Node.from(xml);
+		return node.getToken().getBytes();
 	}
 
 	private static class Token{
 
 		protected byte token;
+
+		public Token(byte token){
+			this.token = token;
+		}
+
+		public Token(){}
 
 		public static Token from(ByteBuffer bb){
 			int b = bb.get() & 0xFF;
@@ -48,14 +60,12 @@ public class FunXMPP{
 				case 0xED:
 				case 0xEE:
 				case 0xEF:{
-					SecondaryToken t = new SecondaryToken();
-					t.token = (byte) b;
+					SecondaryToken t = new SecondaryToken((byte) b);
 					t.secondaryToken = bb.get();
 					return t;
 				}
 				case 0xF8:{
-					ShortList t = new ShortList();
-					t.token = (byte) b;
+					ShortList t = new ShortList((byte) b);
 					t.length = bb.get();
 					for(int i=0;i<t.length;i++){
 						t.items.add(Token.from(bb));
@@ -63,8 +73,7 @@ public class FunXMPP{
 					return t;
 				}
 				case 0xF9:{
-					LongList t = new LongList();
-					t.token = (byte) b;
+					LongList t = new LongList((byte) b);
 					t.length = bb.getShort();
 					for(int i=0;i<t.length;i++){
 						t.items.add(Token.from(bb));
@@ -72,15 +81,13 @@ public class FunXMPP{
 					return t;
 				}
 				case 0xFA:{
-					JabberId t = new JabberId();
-					t.token = (byte) b;
+					JabberId t = new JabberId((byte) b);
 					t.user = Token.from(bb);
 					t.server = Token.from(bb);
 					return t;
 				}
 				case 0xFB:{
-					PackedHex t = new PackedHex();
-					t.token = (byte) b;
+					PackedHex t = new PackedHex((byte) b);
 					byte startByte = bb.get();
 					t.length = startByte & 0x7F;
 					byte[] buf = new byte[t.length];
@@ -89,8 +96,7 @@ public class FunXMPP{
 					return t;
 				}
 				case 0xFC:{
-					Int8LengthArrayString t = new Int8LengthArrayString();
-					t.token = (byte) b;
+					Int8LengthArrayString t = new Int8LengthArrayString((byte) b);
 					t.length = bb.get();
 					byte[] buf = new byte[t.length];
 					bb.get(buf);
@@ -98,8 +104,7 @@ public class FunXMPP{
 					return t;
 				}
 				case 0xFD:{
-					Int20LengthArrayString t = new Int20LengthArrayString();
-					t.token = (byte) b;
+					Int20LengthArrayString t = new Int20LengthArrayString((byte) b);
 					t.length = ((bb.get() & 0xF) << 16) | (bb.get() << 8) | bb.get();
 					byte[] buf = new byte[t.length];
 					bb.get(buf);
@@ -107,8 +112,7 @@ public class FunXMPP{
 					return t;
 				}
 				case 0xFE:{
-					Int31LengthArrayString t = new Int31LengthArrayString();
-					t.token = (byte) b;
+					Int31LengthArrayString t = new Int31LengthArrayString((byte) b);
 					byte int1 = bb.get();
 					t.length = (int1 << 24) | (int1 << 16) | bb.get() << 8 | bb.get();
 					byte[] buf = new byte[t.length];
@@ -117,8 +121,7 @@ public class FunXMPP{
 					return t;
 				}
 				case 0xFF:{
-					PackedNibble t = new PackedNibble();
-					t.token = (byte) b;
+					PackedNibble t = new PackedNibble((byte) b);
 					byte startByte = bb.get();
 					t.length = startByte & 0x7F;
 					byte[] buf = new byte[t.length];
@@ -132,6 +135,10 @@ public class FunXMPP{
 					return t;
 				}
 			}
+		}
+
+		public byte[] getBytes(){
+			return new byte[]{this.token};
 		}
 
 		public String getString(){
@@ -151,6 +158,14 @@ public class FunXMPP{
 
 		protected byte secondaryToken;
 
+		public SecondaryToken(byte token){
+			super(token);
+		}
+
+		public byte[] getBytes(){
+			return new byte[]{this.token,this.secondaryToken};
+		}
+
 		public String getString(){
 			int n = this.token-236 & 0xFF;
 			int n2 = this.secondaryToken & 0xFF;
@@ -168,17 +183,38 @@ public class FunXMPP{
 
 	private static class AbstractList extends Token{
 
-		protected List<Token> items = new ArrayList<>();
-
-		public String getString(){
-			return null;
+		public AbstractList(byte token){
+			super(token);
 		}
+
+		protected List<Token> items = new ArrayList<>();
 
 	}
 
 	private static class ShortList extends AbstractList{
 
 		protected byte length;
+
+		public ShortList(byte token){
+			super(token);
+		}
+
+		public ShortList(){
+			super((byte) 0xF8);
+		}
+
+		public byte[] getBytes(){
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			try{
+				baos.write(new byte[]{this.token, (byte) this.items.size()});
+				for(Token t : this.items){
+					baos.write(t.getBytes());
+				}
+				baos.flush();
+			}
+			catch(IOException ignored){}
+			return baos.toByteArray();
+		}
 
 		@Override
 		public String toString() {
@@ -188,15 +224,32 @@ public class FunXMPP{
 					'}';
 		}
 
-		public String getString(){
-			return null;
-		}
-
 	}
 
 	private static class LongList extends AbstractList{
 
 		protected short length;
+
+		public LongList(byte token){
+			super(token);
+		}
+
+		public LongList(){
+			super((byte) 0xF9);
+		}
+
+		public byte[] getBytes(){
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			try{
+				baos.write(new byte[]{this.token,(byte) ((this.items.size()>>8)&0xFF),(byte) ((this.items.size()>>0)&0xFF)});
+				for(Token t : this.items){
+					baos.write(t.getBytes());
+				}
+				baos.flush();
+			}
+			catch(IOException ignored){}
+			return baos.toByteArray();
+		}
 
 		@Override
 		public String toString() {
@@ -206,10 +259,6 @@ public class FunXMPP{
 					'}';
 		}
 
-		public String getString(){
-			return null;
-		}
-
 	}
 
 	private static class JabberId extends Token{
@@ -217,12 +266,32 @@ public class FunXMPP{
 		protected Token user;
 		protected Token server;
 
+		public JabberId(byte token){
+			super(token);
+		}
+
+		public JabberId(){
+			super((byte) 0xFA);
+		}
+
 		@Override
 		public String toString() {
 			return "JabberId{" +
 					"user=" + user +
 					", server=" + server +
 					'}';
+		}
+
+		public byte[] getBytes(){
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			try{
+				baos.write(new byte[]{this.token});
+				baos.write(this.user.getBytes());
+				baos.write(this.server.getBytes());
+				baos.flush();
+			}
+			catch(IOException ignored){}
+			return baos.toByteArray();
 		}
 
 		public String getString(){
@@ -239,12 +308,31 @@ public class FunXMPP{
 		protected byte length;
 		protected String data;
 
+		public Int8LengthArrayString(byte token){
+			super(token);
+		}
+
+		public Int8LengthArrayString(){
+			super((byte) 0xFC);
+		}
+
 		@Override
 		public String toString() {
 			return "Int8LengthArrayString{" +
 					"length=" + length +
 					", data='" + StringEscapeUtils.escapeXml11(data) + '\'' +
 					'}';
+		}
+
+		public byte[] getBytes(){
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			try{
+				baos.write(new byte[]{this.token,(byte) this.data.length()});
+				baos.write(this.data.getBytes());
+				baos.flush();
+			}
+			catch(IOException ignored){}
+			return baos.toByteArray();
 		}
 
 		public String getString(){
@@ -257,6 +345,25 @@ public class FunXMPP{
 
 		protected int length;
 		protected String data;
+
+		public Int20LengthArrayString(byte token){
+			super(token);
+		}
+
+		public Int20LengthArrayString(){
+			super((byte) 0xFD);
+		}
+
+		public byte[] getBytes(){
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			try{
+				baos.write(new byte[]{this.token, (byte) ((byte) this.data.length() >> 16 & 0x0F), (byte) (this.data.length() >> 8 & 0xFF), (byte) (this.data.length() >>0 & 0xFF)});
+				baos.write(this.data.getBytes());
+				baos.flush();
+			}
+			catch(IOException ignored){}
+			return baos.toByteArray();
+		}
 
 		@Override
 		public String toString() {
@@ -277,6 +384,25 @@ public class FunXMPP{
 		protected int length;
 		protected String data;
 
+		public Int31LengthArrayString(byte token){
+			super(token);
+		}
+
+		public Int31LengthArrayString(){
+			super((byte) 0xFE);
+		}
+
+		public byte[] getBytes(){
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			try{
+				baos.write(new byte[]{this.token,(byte) ((byte) this.data.length() >> 24 & 0x7F), (byte) ((byte) this.data.length() >> 16 & 0xFF), (byte) (this.data.length() >> 8 & 0xFF), (byte) (this.data.length() >>0 & 0xFF)});
+				baos.write(this.data.getBytes());
+				baos.flush();
+			}
+			catch(IOException ignored){}
+			return baos.toByteArray();
+		}
+
 		@Override
 		public String toString() {
 			return "Int31LengthArrayString{" +
@@ -296,8 +422,29 @@ public class FunXMPP{
 		protected int length;
 		protected String data;
 
+		public PackedNibble(byte token){
+			super(token);
+		}
+
+		public PackedNibble(){
+			super((byte) 0xFF);
+		}
+
+		public byte[] getBytes(){
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			try{
+				baos.write(new byte[]{this.token,(byte) 0x00});
+				baos.flush();
+			}
+			catch(IOException ignored){}
+			return baos.toByteArray();
+		}
+
 		public static String unpack(byte startByte,byte[] packed){
 			StringBuilder ret = new StringBuilder();
+			if((startByte & 0x7F)==0){
+				return "";
+			}
 			for(int i=0;i<(startByte & 0x7F);i++){
 				byte currByte = packed[i];
 				ret.append(PackedNibble.unpackByte((currByte & 0xF0) >> 4));
@@ -338,8 +485,29 @@ public class FunXMPP{
 		protected int length;
 		protected String data;
 
+		public PackedHex(byte token){
+			super(token);
+		}
+
+		public PackedHex(){
+			super((byte) 0xFB);
+		}
+
+		public byte[] getBytes(){
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			try{
+				baos.write(new byte[]{this.token,(byte) 0x00});
+				baos.flush();
+			}
+			catch(IOException ignored){}
+			return baos.toByteArray();
+		}
+
 		public static String unpack(byte startByte,byte[] packed){
 			StringBuilder ret = new StringBuilder();
+			if((startByte & 0x7F)==0){
+				return "";
+			}
 			for(int i=0;i<(startByte & 0x7F);i++){
 				byte currByte = packed[i];
 				ret.append(PackedHex.unpackByte((currByte & 0xF0) >> 4));
@@ -418,6 +586,30 @@ public class FunXMPP{
 			return node;
 		}
 
+		public static Node from(String xml){
+			Element elem = Jsoup.parse(xml).body().child(0);
+			return Node.from(elem);
+		}
+
+		private static Node from(Element elem){
+			Node n = new Node();
+
+			n.tag = elem.tagName();
+
+			for(org.jsoup.nodes.Attribute a : elem.attributes()){
+				n.attributes.add(new Attribute(a.getKey(),a.getValue()));
+			}
+			for(Element e : elem.children()){
+				n.children.add(Node.from(e));
+			}
+
+			if(!elem.ownText().isEmpty()){
+				n.data = elem.ownText();
+			}
+
+			return n;
+		}
+
 		public String getString(){
 			StringBuilder output = new StringBuilder();
 
@@ -443,6 +635,90 @@ public class FunXMPP{
 			return output.toString();
 		}
 
+		public AbstractList getToken(){
+			int size = 1;
+			size += this.attributes.size()*2;
+			if(this.data!=null || this.children.size()>0){
+				size++;
+			}
+			AbstractList nodeList;
+			if(size>=256){
+				nodeList = new LongList();
+			}else{
+				nodeList = new ShortList();
+			}
+
+			nodeList.items.add(this.writeString(this.tag));
+			for(Attribute a : this.attributes){
+				nodeList.items.add(this.writeString(a.key));
+				nodeList.items.add(this.writeString(a.value));
+			}
+			if(this.children.size()>0){
+//				if(this.children.size()==1){
+//					nodeList.items.add(this.children.get(0).getToken());
+//				}else{
+					AbstractList childList;
+					if(this.children.size()>=256){
+						childList = new LongList();
+					}else{
+						childList = new ShortList();
+					}
+					for(Node childNode : this.children){
+						childList.items.add(childNode.getToken());
+					}
+					nodeList.items.add(childList);
+//				}
+			}else if(this.data!=null){
+				nodeList.items.add(this.writeString(this.data));
+			}
+
+			return nodeList;
+		}
+
+		private Token writeString(String str){
+			if(str==null){
+				return new Token((byte) 0);
+			}
+			for(int i=0;i<FunXMPP.dictionary.length;i++){
+				if(FunXMPP.dictionary[i].equals(str)){
+					return new Token((byte) i);
+				}
+			}
+			for(int i=0;i<FunXMPP.secondaryDictionary.length;i++){
+				if(FunXMPP.secondaryDictionary[i].equals(str)){
+					SecondaryToken t = new SecondaryToken((byte) (0xEC+i/256));
+					t.secondaryToken = (byte) (i%256);
+					return t;
+				}
+			}
+			if(str.contains("@")){
+				String[] jid = str.split("@");
+				Token user = this.writeString(jid[0]);
+				Token server = this.writeString(jid[1]);
+				JabberId t = new JabberId();
+				t.user = user;
+				t.server = server;
+				return t;
+			}
+			//TODO Packed Nibble and packed Hex
+			if(str.length()<=255L){
+				Int8LengthArrayString arr = new Int8LengthArrayString();
+				arr.data = str;
+				return arr;
+			}
+			if(str.length()<=1048575L){
+				Int8LengthArrayString arr = new Int8LengthArrayString();
+				arr.data = str;
+				return arr;
+			}
+			if(str.length()<=2147483647L){
+				Int31LengthArrayString arr = new Int31LengthArrayString();
+				arr.data = str;
+				return arr;
+			}
+			return null;
+		}
+
 		@Override
 		public String toString() {
 			return "Node{" +
@@ -457,6 +733,14 @@ public class FunXMPP{
 
 			private String key;
 			private String value;
+
+			public Attribute(){
+			}
+
+			public Attribute(String key,String value){
+				this.key = key;
+				this.value = value;
+			}
 
 			@Override
 			public String toString() {

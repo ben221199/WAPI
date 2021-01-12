@@ -9,7 +9,7 @@ public class FunOutputStream extends NoiseOutputStream{
 		super(out);
 	}
 
-	public void writeXML(FunXMPP.Node xml) throws IOException{
+	public void writeXML(String xml) throws IOException{
 		this.writeEncryptedSegment(FunXMPP.encode(xml));
 	}
 
