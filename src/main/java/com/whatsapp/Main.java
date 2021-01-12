@@ -15,22 +15,18 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.net.URLEncoder;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.ShortBufferException;
 
-import org.json.JSONObject;
-
 public class Main{
 
-	private static String id = "<ID>";
-	private static String cc = "<CC>";
-	private static String in = "<IN>";
+	private static String id = "abcdeabcdeabcde12350";
+	private static String cc = "7";
+	private static String in = "9670154494";
 
 	public static void main(String... args) throws IOException, NoSuchAlgorithmException{
 		KeyPair client_static_keypair = Main.getClientStaticKeyPair();
@@ -48,7 +44,7 @@ public class Main{
 		Main.writeWhatsAppHeader(hs,out);
 
 		if(hs.needsLocalKeyPair()){
-			hs.getLocalKeyPair().setPublicKey(client_static_keypair.getPublic().getEncoded(),0);
+			//hs.getLocalKeyPair().setPublicKey(client_static_keypair.getPublic().getEncoded(),0);
 			hs.getLocalKeyPair().setPrivateKey(client_static_keypair.getPrivate().getEncoded(),0);
 		}
 		hs.start();
@@ -62,14 +58,10 @@ public class Main{
 		in.setCipherState(cipherStates.getReceiver());
 		out.setCipherState(cipherStates.getSender());
 
-		String xml = in.readXML();
-		System.out.println("From server = "+xml);
-
-		out.writeEncryptedSegment(new byte[]{0x56});
-		out.flush();
-
-		String xml2 = in.readXML();
-		System.out.println("From server = "+xml2);
+		String xml;
+		while((xml = in.readXML())!=null){
+			System.out.println(xml);
+		}
 	}
 
 	private static HandshakeState createHandshakeState(){
@@ -205,14 +197,14 @@ public class Main{
 				.setManufacturer("Droid")
 				.setDevice("S5")
 				.setOsBuildNumber("1.0.5")
-				.setPhoneId("79033778355")
+				.setPhoneId(cc+in)
 				.setLocaleLanguageIso6391("nl")
 				.setLocalCountryIso31661Alpha2("NL")
 				.setAppVersion(appVersion)
 				.build();
 
 		return WhatsProtos.ClientPayload.newBuilder()
-				.setUsername(79033778355L)
+				.setUsername(Long.parseLong(cc+in))
 				.setPassive(true)
 				.setPushName("H_____________OI")
 				.setSessionId(5)

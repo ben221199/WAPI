@@ -13,9 +13,9 @@ import org.json.JSONObject;
 
 public class RegisterMain{
 
-	private static String id = "<ID>";
-	private static String cc = "<CC>";
-	private static String in = "<IN>";
+	private static String id = "abcdeabcdeabcde12350";
+	private static String cc = "7";
+	private static String in = "9670154494";
 
 	public static void main(String... args) throws IOException, NoSuchAlgorithmException {
 		KeyPair client_static_keypair = Main.getClientStaticKeyPair();

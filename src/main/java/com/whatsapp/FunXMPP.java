@@ -1,9 +1,11 @@
 package com.whatsapp;
 
 import com.whatsapp.protocol.WA40;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class FunXMPP{
@@ -77,10 +79,14 @@ public class FunXMPP{
 					return t;
 				}
 				case 0xFB:{
-					//TODO
-					int len = bb.get() & 0x7F;
-					bb.get(new byte[len]);
-					return null;
+					PackedHex t = new PackedHex();
+					t.token = (byte) b;
+					byte startByte = bb.get();
+					t.length = startByte & 0x7F;
+					byte[] buf = new byte[t.length];
+					bb.get(buf);
+					t.data = PackedHex.unpack(startByte,buf);
+					return t;
 				}
 				case 0xFC:{
 					Int8LengthArrayString t = new Int8LengthArrayString();
@@ -111,10 +117,14 @@ public class FunXMPP{
 					return t;
 				}
 				case 0xFF:{
-					//TODO
-					int len = bb.get() & 0x7F;
-					bb.get(new byte[len]);
-					return null;
+					PackedNibble t = new PackedNibble();
+					t.token = (byte) b;
+					byte startByte = bb.get();
+					t.length = startByte & 0x7F;
+					byte[] buf = new byte[t.length];
+					bb.get(buf);
+					t.data = PackedNibble.unpack(startByte,buf);
+					return t;
 				}
 				default:{
 					Token t = new Token();
@@ -216,7 +226,10 @@ public class FunXMPP{
 		}
 
 		public String getString(){
-			return null;
+			if(this.user==null || this.server==null){
+				return "";
+			}
+			return this.user.getString()+"@"+this.server.getString();
 		}
 
 	}
@@ -230,12 +243,12 @@ public class FunXMPP{
 		public String toString() {
 			return "Int8LengthArrayString{" +
 					"length=" + length +
-					", data='" + data + '\'' +
+					", data='" + StringEscapeUtils.escapeXml11(data) + '\'' +
 					'}';
 		}
 
 		public String getString(){
-			return null;
+			return this.data;
 		}
 
 	}
@@ -249,12 +262,12 @@ public class FunXMPP{
 		public String toString() {
 			return "Int20LengthArrayString{" +
 					"length=" + length +
-					", data='" + data + '\'' +
+					", data='" + StringEscapeUtils.escapeXml11(data) + '\'' +
 					'}';
 		}
 
 		public String getString(){
-			return null;
+			return this.data;
 		}
 
 	}
@@ -268,12 +281,98 @@ public class FunXMPP{
 		public String toString() {
 			return "Int31LengthArrayString{" +
 					"length=" + length +
-					", data='" + data + '\'' +
+					", data='" + StringEscapeUtils.escapeXml11(data) + '\'' +
 					'}';
 		}
 
 		public String getString(){
-			return null;
+			return this.data;
+		}
+
+	}
+
+	private static class PackedNibble extends Token{
+
+		protected int length;
+		protected String data;
+
+		public static String unpack(byte startByte,byte[] packed){
+			StringBuilder ret = new StringBuilder();
+			for(int i=0;i<(startByte & 0x7F);i++){
+				byte currByte = packed[i];
+				ret.append(PackedNibble.unpackByte((currByte & 0xF0) >> 4));
+				ret.append(PackedNibble.unpackByte(currByte & 0x0F));
+			}
+			if((startByte >> 7)==0){
+				ret = new StringBuilder(new String(Arrays.copyOfRange(ret.toString().getBytes(), 0, ret.length() - 1)));// ret[:len(ret)-1];
+			}
+			return ret.toString();
+		}
+
+		private static String unpackByte(int value){
+			if(value < 0 || value > 15){
+				throw new RuntimeException("invalid hex to unpack: "+value);
+			}
+			if(value < 10){
+				return String.valueOf((char) ('0'+value));
+			}else{
+				return String.valueOf((char) ('A'+value-10));
+			}
+		}
+
+		@Override
+		public String toString() {
+			return "PackedNibble{" +
+					"data='" + data + '\'' +
+					'}';
+		}
+
+		public String getString(){
+			return this.data;
+		}
+
+	}
+
+	private static class PackedHex extends Token{
+
+		protected int length;
+		protected String data;
+
+		public static String unpack(byte startByte,byte[] packed){
+			StringBuilder ret = new StringBuilder();
+			for(int i=0;i<(startByte & 0x7F);i++){
+				byte currByte = packed[i];
+				ret.append(PackedHex.unpackByte((currByte & 0xF0) >> 4));
+				ret.append(PackedHex.unpackByte(currByte & 0x0F));
+			}
+			if((startByte >> 7)==0){
+				ret = new StringBuilder(new String(Arrays.copyOfRange(ret.toString().getBytes(), 0, ret.length() - 1)));// ret[:len(ret)-1];
+			}
+			return ret.toString();
+		}
+
+		private static String unpackByte(int value){
+			if(value >= 0 && value <= 9){
+				return String.valueOf((char) ('0'+value));
+			}else if(value==10){
+				return "-";
+			}else if(value==11){
+				return ".";
+			}else if(value==15){
+				return "\0";
+			}
+			throw new RuntimeException("invalid nibble to unpack: " + value);
+		}
+
+		@Override
+		public String toString() {
+			return "PackedHex{" +
+					"data='" + data + '\'' +
+					'}';
+		}
+
+		public String getString(){
+			return this.data;
 		}
 
 	}
@@ -334,7 +433,7 @@ public class FunXMPP{
 						output.append(child.getString());
 					}
 				}else{
-					output.append(this.data);
+					output.append(StringEscapeUtils.escapeXml11(this.data));
 				}
 				output.append("</").append(this.tag).append(">");
 			}
