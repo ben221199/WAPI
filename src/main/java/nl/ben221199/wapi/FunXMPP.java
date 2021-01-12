@@ -553,6 +553,13 @@ public class FunXMPP{
 		private List<Node> children = new ArrayList<>();
 		private String data;
 
+		public static Node closed(){
+			Node node = new Node();
+			node.tagToken = new Token((byte) 2);
+			node.tag = node.tagToken.getString();
+			return node;
+		}
+
 		public static Node from(AbstractList list){
 			int offset = 0;
 			Node node = new Node();
@@ -587,6 +594,9 @@ public class FunXMPP{
 		}
 
 		public static Node from(String xml){
+			if("</stream:stream>".equalsIgnoreCase(xml)){
+				return Node.closed();
+			}
 			Element elem = Jsoup.parse(xml).body().child(0);
 			return Node.from(elem);
 		}
@@ -614,12 +624,23 @@ public class FunXMPP{
 			StringBuilder output = new StringBuilder();
 
 			output.append("<");
+			if(this.tagToken.token==2){
+				output.append("/");
+			}
 			output.append(this.tag);
 			for(Attribute attr : this.attributes){
 				output.append(" ").append(attr.key).append("=\"").append(attr.value).append("\"");
 			}
-			if(this.data==null && this.children.size()==0 && this.tagToken.token!=2){
-				output.append("/>");
+			if(this.data==null && this.children.size()==0){
+				if(this.tagToken.token==1){
+					output.append(">");
+				}else{
+					if(this.tagToken.token==2){
+						output.append(">");
+					}else{
+						output.append("/>");
+					}
+				}
 			}else{
 				output.append(">");
 				if(this.data==null){
@@ -648,7 +669,11 @@ public class FunXMPP{
 				nodeList = new ShortList();
 			}
 
-			nodeList.items.add(this.writeString(this.tag));
+			if(this.tagToken==null){
+				nodeList.items.add(this.writeString(this.tag));
+			}else{
+				nodeList.items.add(this.tagToken);
+			}
 			for(Attribute a : this.attributes){
 				nodeList.items.add(this.writeString(a.key));
 				nodeList.items.add(this.writeString(a.value));
