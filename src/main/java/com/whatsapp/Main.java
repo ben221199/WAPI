@@ -26,68 +26,6 @@ import javax.crypto.ShortBufferException;
 
 public class Main{
 
-	private static final int MAJOR = 4;
-	private static final int MINOR = 0;
-
-	public static String _SIGNATURE = "MIIDMjCCAvCgAwIBAgIETCU2pDALBgcqhkjOOAQDBQAwfDELMAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWExFDASBgNV" +
-			"BAcTC1NhbnRhIENsYXJhMRYwFAYDVQQKEw1XaGF0c0FwcCBJbmMuMRQwEgYDVQQLEwtFbmdpbmVlcmluZzEUMBIGA1UEAxMLQnJ" +
-			"pYW4gQWN0b24wHhcNMTAwNjI1MjMwNzE2WhcNNDQwMjE1MjMwNzE2WjB8MQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5" +
-			"pYTEUMBIGA1UEBxMLU2FudGEgQ2xhcmExFjAUBgNVBAoTDVdoYXRzQXBwIEluYy4xFDASBgNVBAsTC0VuZ2luZWVyaW5nMRQwEg" +
-			"YDVQQDEwtCcmlhbiBBY3RvbjCCAbgwggEsBgcqhkjOOAQBMIIBHwKBgQD9f1OBHXUSKVLfSpwu7OTn9hG3UjzvRADDHj+AtlEm" +
-			"aUVdQCJR+1k9jVj6v8X1ujD2y5tVbNeBO4AdNG/yZmC3a5lQpaSfn+gEexAiwk+7qdf+t8Yb+DtX58aophUPBPuD9tPFHsMCN" +
-			"VQTWhaRMvZ1864rYdcq7/IiAxmd0UgBxwIVAJdgUI8VIwvMspK5gqLrhAvwWBz1AoGBAPfhoIXWmz3ey7yrXDa4V7l5lK+7+jr" +
-			"qgvlXTAs9B4JnUVlXjrrUWU/mcQcQgYC0SRZxI+hMKBYTt88JMozIpuE8FnqLVHyNKOCjrh4rs6Z1kW6jfwv6ITVi8ftiegEkO" +
-			"8yk8b6oUZCJqIPf4VrlnwaSi2ZegHtVJWQBTDv+z0kqA4GFAAKBgQDRGYtLgWh7zyRtQainJfCpiaUbzjJuhMgo4fVWZIvXHaS" +
-			"HBU1t5w//S0lDK2hiqkj8KpMWGywVov9eZxZy37V26dEqr/c2m5qZ0E+ynSu7sqUD7kGx/zeIcGT0H+KAVgkGNQCo5Uc0koLRW" +
-			"YHNtYoIvt5R3X6YZylbPftF/8ayWTALBgcqhkjOOAQDBQADLwAwLAIUAKYCp0d6z4QQdyN74JDfQ2WCyi8CFDUM4CaNB+ceVXd" +
-			"KtOrNTQcc0e+t";
-
-//	public static String _MD5_CLASSES = "sRhBbr747oSPJ1wpla3joQ==";
-//	public static String _MD5_CLASSES = "yk7z7GBLIXbDAGfZLASCKQ==";
-	public static String _MD5_CLASSES = "oEYGYTr+K6IN0mDOrAZpsg==";
-
-	public static String _KEY = "eQV5aq/Cg63Gsq1sshN9T3gh+UUp0wIw0xgHYT1bnCjEqOJQKCRrWxdAe2yvsDeCJL+Y4G3PRD2HUF7oUgiGo8vGlNJOaux26k+A2F3hj8A=";
-
-	public static String getAndroidToken(String phoneNumber){
-		byte[] keyDecoded = Base64.getDecoder().decode(Main._KEY);
-		byte[] sigDecoded = Base64.getDecoder().decode(Main._SIGNATURE);
-		byte[] clsDecoded = Base64.getDecoder().decode(Main._MD5_CLASSES);
-
-		byte[] data = ByteString.copyFrom(sigDecoded).concat(ByteString.copyFrom(clsDecoded)).concat(ByteString.copyFrom(phoneNumber.getBytes())).toByteArray();
-
-		byte[] opad = new byte[64];
-		byte[] ipad = new byte[64];
-		for(int i=0;i<64;i++){
-			opad[i] = (byte) (0x5C ^ keyDecoded[i]);
-			ipad[i] = (byte) (0x36 ^ keyDecoded[i]);
-		}
-		MessageDigest hash;
-		MessageDigest subHash;
-		try{
-			hash = MessageDigest.getInstance("SHA1");
-			subHash = MessageDigest.getInstance("SHA1");
-		}catch(NoSuchAlgorithmException e){
-			return null;
-		}
-		subHash.update(ByteString.copyFrom(ipad).concat(ByteString.copyFrom(data)).toByteArray());
-		hash.update(ByteString.copyFrom(opad).concat(ByteString.copyFrom(subHash.digest())).toByteArray());
-		String result = Base64.getEncoder().encodeToString(hash.digest());
-		return result;
-	}
-
-	public static String getNokiaToken(String phoneNumber){
-		String $const = "PdA2DJyKoUrwLw1Bg6EIhzh502dF9noR9uFCllGk";
-		String releaseTime = "1452554789539"; // 2.13.30
-		MessageDigest md5 = null;
-		try{
-			md5 = MessageDigest.getInstance("MD5");
-		}catch(NoSuchAlgorithmException e){
-			return null;
-		}
-		md5.update(($const+releaseTime+phoneNumber).getBytes());
-		return Main.bytesToHex(md5.digest());
-	}
-
 	public static void main(String... args) throws IOException{
 //		DHState dh = null;
 //		try {
@@ -205,11 +143,11 @@ public class Main{
 	}
 
 	private static void writeWhatsAppHeader(HandshakeState hs,NoiseOutputStream sos) throws IOException{
-		byte[] WA = new byte[]{(byte)'W',(byte)'A',(byte) Main.MAJOR,(byte) Main.MINOR};
+		byte[] WA = new byte[]{(byte)'W',(byte)'A',(byte) Constants.Protocol.MAJOR,(byte) Constants.Protocol.MINOR};
 		sos.write(WA);
 		hs.setPrologue(WA,0,WA.length);
 		sos.flush();
-		FunXMPP.setVersion(Main.MAJOR,Main.MINOR);
+		FunXMPP.setVersion(Constants.Protocol.MAJOR,Constants.Protocol.MINOR);
 	}
 
 	private static CipherStatePair writeHandshakeXX(HandshakeState hs,NoiseInputStream in,NoiseOutputStream out) throws IOException{
