@@ -9,84 +9,45 @@ import com.southernstorm.noise.protocol.DHState;
 import com.southernstorm.noise.protocol.HandshakeState;
 import com.southernstorm.noise.protocol.Noise;
 import com.whatsapp.protobuf.WhatsProtos;
+import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.URLEncoder;
 import java.security.KeyPair;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
+import java.util.Arrays;
 import java.util.Base64;
-import java.util.Random;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.ShortBufferException;
 
 public class Main{
 
-	public static void main(String... args) throws IOException{
-//		DHState dh = null;
-//		try {
-//			dh = Noise.createDH("25519");
-//			dh.generateKeyPair();
-//		} catch (NoSuchAlgorithmException e) {
-//			e.printStackTrace();
-//		}
-//
-//		byte[] buf = new byte[32];
-//		dh.getPublicKey(buf,0);
-//
-//		byte[] id = new byte[20];
-//		new Random().nextBytes(id);
-//
-//		System.err.println(Verification.exist(
-//				"cc="+31,
-//				"in="+612322954L,
-//				"lg=en",
-//				"lc=GB",
-//				"mistyped=6",
-//				"authkey="+URLEncoder.encode(Base64.getEncoder().encodeToString(buf)),
-//
-////				"e_regid="+"AbxbLA",//+self.b64encode(struct.pack('>I', self._axolotlmanager.registration_id))),
-////				"e_keytype="+URLEncoder.encode(Base64.getEncoder().encodeToString(new byte[]{0x05})),//+self.b64encode(b"\x05")),
-////				"e_ident="+"%5fP0uapdTA8Fb7gpSiz18FTGRL8vZeQqNmKKwPQveKk0",//+self.b64encode(self._axolotlmanager.identity.publicKey.serialize()[1:])),
-////
-//////		signedprekey = self._axolotlmanager.load_latest_signed_prekey(generate=True)
-////				"e_skey_id="+"AAAA",//+self.b64encode(struct.pack('>I', signedprekey.getId())[1:]))
-////				"e_skey_val="+"Xqk7CrPs1e%2dNfUQT2830fHxirbUXqPTalICYICuMJS4",// self.b64encode(signedprekey.getKeyPair().publicKey.serialize()[1:]))
-////				"e_skey_sig="+"EvqIbddra2cRKYxeUC9uKn41V1amhfDUxdxzh88TJ4hg8XnE5qH5dwm4AgvPrixCx7TBw8GdDdh1%5fMi6Wn8JCQ",// self.b64encode(signedprekey.getSignature()))
-//
-//				"fdid="+URLEncoder.encode("f6dda44c-00b9-4002-b148-4e5bf47fdc37"),// config.fdid)
-//				"expid="+URLEncoder.encode("M4vp4iFIQ5y1EK/xUI65jA=="),// self.b64encode(config.expid))
-//
-//				"network_radio_type="+1,// "1")
-//				"simnum="+1,//, "1")
-//				"hasinrc=",//, "1")
-//				"pid=",//, int(random.uniform(100, 9999)))
-//				"rc="+0,//, 0)
-////		if self._config.id:
-//				"id="+URLEncoder.encode(new String(id)),//"%fb%ac0%ce%ee%1db%b4%045%21%1f%3aA%c1%97%87%9cAn",//+ self._config.id
-//				"token="+URLEncoder.encode(getAndroidToken("9633817594"))));
-//
-//		System.exit(0);
+	private static String id = "abcdeabcdeabcdeabcde";
+	private static String cc = "7";
+	private static String in = "9633817594";
 
-		String client_static_keypair = "8ICKJ4El/hz53zjqqNfe/QcQWcpPxyB27hFsjCdqD2jbkTGZYumV60+QhvKWemRFalgpJkJmAreqObBaRq7NAQ==";
+	public static void main(String... args) throws IOException, NoSuchAlgorithmException{
+		KeyPair client_static_keypair = Main.getClientStaticKeyPair();
 
-		byte[] client_static_keypair_bytes = Base64.getDecoder().decode(client_static_keypair);
-		//client_static_keypair_bytes = new byte[64];
-//		if(client_static_keypair_bytes.length!=64){
-//			System.err.println("The 'client_static_keypair' isn't 64 bytes long");
-//			return;
-//		}
-		byte[] priv_bytes = new byte[32];
-		System.arraycopy(client_static_keypair_bytes,0,priv_bytes,0,priv_bytes.length);
-		PrivateKey priv = new Curve25519PrivateKey(priv_bytes);
-
-		byte[] pub_bytes = new byte[32];
-		System.arraycopy(client_static_keypair_bytes,32,pub_bytes,0,pub_bytes.length);
-		PublicKey pub = new Curve25519PublicKey(pub_bytes);
+		JSONObject existJSON = new JSONObject(Verification.exist(
+				"authkey="+URLEncoder.encode(Base64.getEncoder().encodeToString(client_static_keypair.getPublic().getEncoded()),"UTF-8"),
+				"in="+in,
+				"cc="+cc,
+				"id="+URLEncoder.encode(id,"UTF-8")));
+		if(existJSON.has("status") && "fail".equals(existJSON.getString("status"))){
+			//TODO asking code and registering with code
+			System.err.println("Unknown ID for IN & CC. Should re-register to link ID to IN & CC.");
+			return;
+		}
+		System.err.println(existJSON);
+		if(existJSON.has("status") && "ok".equals(existJSON.getString("status"))){
+			System.err.println("This ID is linked to CC & IN. You could use it directly.");
+		}
 
 		Socket s = new Socket("e7.whatsapp.net",443);
 		FunInputStream in = new FunInputStream(s.getInputStream());
@@ -97,19 +58,12 @@ public class Main{
 			System.err.println("Failed to create handshake state");
 			return;
 		}
-//		hs.getFixedHybridKey()
-
-//		hs.key(pub_bytes,0,pub_bytes.length);
 
 		Main.writeWhatsAppHeader(hs,out);
 
 		if(hs.needsLocalKeyPair()){
-			hs.getLocalKeyPair().generateKeyPair();
-//			hs.getLocalKeyPair().setPublicKey(pub.getEncoded(),0);
-//			hs.getLocalKeyPair().setPrivateKey(priv.getEncoded(),0);
-//			System.out.println("[PUBL] "+bytesToHex(kp.getPublic().getEncoded()));
-//			System.out.println("[PRIV] "+bytesToHex(kp.getPrivate().getEncoded()));
-//			System.err.println(hs.getLocalKeyPair().generateKeyPair());
+			hs.getLocalKeyPair().setPublicKey(client_static_keypair.getPublic().getEncoded(),0);
+			hs.getLocalKeyPair().setPrivateKey(client_static_keypair.getPrivate().getEncoded(),0);
 		}
 		hs.start();
 
@@ -319,6 +273,29 @@ public class Main{
 //		//Curve25519PublicKey.a();
 //
 //		//KeyPair ecdh = new KeyPair();
+	}
+
+	private static KeyPair getClientStaticKeyPair() throws IOException, NoSuchAlgorithmException {
+		File keypairFile = new File("keypair.txt");
+		if(keypairFile.exists()){
+			FileInputStream fos = new FileInputStream(keypairFile);
+			byte[] bytes = new byte[64];
+			fos.read(bytes);
+			fos.close();
+			return new KeyPair(new Curve25519PublicKey(Arrays.copyOfRange(bytes,0,32)),new Curve25519PrivateKey(Arrays.copyOfRange(bytes,32,64)));
+		}
+		DHState client_static_keypair = Noise.createDH("25519");
+		client_static_keypair.generateKeyPair();
+		byte[] public_key_bytes = new byte[client_static_keypair.getPublicKeyLength()];
+		client_static_keypair.getPublicKey(public_key_bytes,0);
+		byte[] private_key_bytes = new byte[client_static_keypair.getPrivateKeyLength()];
+		client_static_keypair.getPrivateKey(private_key_bytes,0);
+		FileOutputStream fos = new FileOutputStream(keypairFile);
+		fos.write(public_key_bytes);
+		fos.write(private_key_bytes);
+		fos.flush();
+		fos.close();
+		return new KeyPair(new Curve25519PublicKey(public_key_bytes),new Curve25519PrivateKey(private_key_bytes));
 	}
 
 
