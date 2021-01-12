@@ -18,7 +18,7 @@ public class RegisterMain{
 	private static String in = "9670154494";
 
 	public static void main(String... args) throws IOException, NoSuchAlgorithmException {
-		KeyPair client_static_keypair = Main.getClientStaticKeyPair();
+		KeyPair client_static_keypair = Config.client_static_keypair;
 
 		Scanner s = new Scanner(System.in);
 

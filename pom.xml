@@ -32,7 +32,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<mainClass>com.whatsapp.Main</mainClass>
+					<mainClass>nl.ben221199.wapi.Main</mainClass>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -40,7 +40,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>com.whatsapp.Main</mainClass>
+							<mainClass>nl.ben221199.wapi.Main</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
