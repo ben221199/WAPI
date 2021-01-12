@@ -1,8 +1,7 @@
-package com.whatsapp;
+package nl.ben221199.wapi;
 
 import com.southernstorm.noise.protocol.CipherState;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.ShortBufferException;
 import java.io.IOException;
 import java.io.OutputStream;

@@ -1,6 +1,6 @@
-package com.whatsapp;
+package nl.ben221199.wapi;
 
-import com.whatsapp.protocol.WA40;
+import nl.ben221199.wapi.protocol.WA40;
 import org.apache.commons.text.StringEscapeUtils;
 
 import java.nio.ByteBuffer;

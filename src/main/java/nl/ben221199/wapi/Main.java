@@ -1,11 +1,11 @@
-package com.whatsapp;
+package nl.ben221199.wapi;
 
 import br.eti.balena.security.ecdh.curve25519.Curve25519PrivateKey;
 import br.eti.balena.security.ecdh.curve25519.Curve25519PublicKey;
 
 import com.southernstorm.noise.protocol.DHState;
 import com.southernstorm.noise.protocol.Noise;
-import com.whatsapp.protobuf.WhatsProtos;
+import nl.ben221199.wapi.protobuf.WhatsProtos;
 
 import java.io.File;
 import java.io.FileInputStream;

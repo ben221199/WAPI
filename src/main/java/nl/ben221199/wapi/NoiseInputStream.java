@@ -1,4 +1,4 @@
-package com.whatsapp;
+package nl.ben221199.wapi;
 
 import com.southernstorm.noise.protocol.CipherState;
 

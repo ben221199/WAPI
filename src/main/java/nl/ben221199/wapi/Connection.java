@@ -1,9 +1,9 @@
-package com.whatsapp;
+package nl.ben221199.wapi;
 
 import com.google.protobuf.ByteString;
 import com.southernstorm.noise.protocol.CipherStatePair;
 import com.southernstorm.noise.protocol.HandshakeState;
-import com.whatsapp.protobuf.WhatsProtos;
+import nl.ben221199.wapi.protobuf.WhatsProtos;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.ShortBufferException;

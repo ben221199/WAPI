@@ -1,4 +1,4 @@
-package com.whatsapp.protocol;
+package nl.ben221199.wapi.protocol;
 
 public class WA40{
 
