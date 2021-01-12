@@ -9,7 +9,6 @@ import com.southernstorm.noise.protocol.DHState;
 import com.southernstorm.noise.protocol.HandshakeState;
 import com.southernstorm.noise.protocol.Noise;
 import com.whatsapp.protobuf.WhatsProtos;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,29 +24,16 @@ import java.util.Base64;
 import javax.crypto.BadPaddingException;
 import javax.crypto.ShortBufferException;
 
+import org.json.JSONObject;
+
 public class Main{
 
-	private static String id = "abcdeabcdeabcdeabcde";
-	private static String cc = "7";
-	private static String in = "9633817594";
+	private static String id = "<ID>";
+	private static String cc = "<CC>";
+	private static String in = "<IN>";
 
 	public static void main(String... args) throws IOException, NoSuchAlgorithmException{
 		KeyPair client_static_keypair = Main.getClientStaticKeyPair();
-
-		JSONObject existJSON = new JSONObject(Verification.exist(
-				"authkey="+URLEncoder.encode(Base64.getEncoder().encodeToString(client_static_keypair.getPublic().getEncoded()),"UTF-8"),
-				"in="+in,
-				"cc="+cc,
-				"id="+URLEncoder.encode(id,"UTF-8")));
-		if(existJSON.has("status") && "fail".equals(existJSON.getString("status"))){
-			//TODO asking code and registering with code
-			System.err.println("Unknown ID for IN & CC. Should re-register to link ID to IN & CC.");
-			return;
-		}
-		System.err.println(existJSON);
-		if(existJSON.has("status") && "ok".equals(existJSON.getString("status"))){
-			System.err.println("This ID is linked to CC & IN. You could use it directly.");
-		}
 
 		Socket s = new Socket("e7.whatsapp.net",443);
 		FunInputStream in = new FunInputStream(s.getInputStream());
@@ -275,7 +261,7 @@ public class Main{
 //		//KeyPair ecdh = new KeyPair();
 	}
 
-	private static KeyPair getClientStaticKeyPair() throws IOException, NoSuchAlgorithmException {
+	public static KeyPair getClientStaticKeyPair() throws IOException, NoSuchAlgorithmException {
 		File keypairFile = new File("keypair.txt");
 		if(keypairFile.exists()){
 			FileInputStream fos = new FileInputStream(keypairFile);
