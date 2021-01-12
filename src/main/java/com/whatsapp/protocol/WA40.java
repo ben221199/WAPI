@@ -3,9 +3,10 @@ package com.whatsapp.protocol;
 public class WA40{
 
 	public static String[] getDictionary(){
-		return new String[]{"",
-				"xmlstreamstart",
-				"xmlstreamend",
+		return new String[]{
+				"",
+				"stream:stream",	//OPENING TAG
+				"stream:stream",	//CLOSING TAG
 				"type",
 				"id",
 				"from",

@@ -18,6 +18,7 @@ import java.net.Socket;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.ShortBufferException;
@@ -27,6 +28,7 @@ public class Main{
 	private static String id = "abcdeabcdeabcde12350";
 	private static String cc = "7";
 	private static String in = "9670154494";
+	private static byte[] edge_routing_info = Base64.getDecoder().decode("CAUICA==");
 
 	public static void main(String... args) throws IOException, NoSuchAlgorithmException{
 		KeyPair client_static_keypair = Main.getClientStaticKeyPair();
@@ -39,6 +41,10 @@ public class Main{
 		if(hs==null){
 			System.err.println("Failed to create handshake state");
 			return;
+		}
+
+		if(edge_routing_info!=null){
+			Main.writeEdgeHeader(out,edge_routing_info);
 		}
 
 		Main.writeWhatsAppHeader(hs,out);
@@ -62,6 +68,7 @@ public class Main{
 		while((xml = in.readXML())!=null){
 			System.out.println(xml);
 		}
+		System.err.println("EXIT");
 	}
 
 	private static HandshakeState createHandshakeState(){
@@ -74,8 +81,15 @@ public class Main{
 		return hs;
 	}
 
+	private static void writeEdgeHeader(NoiseOutputStream sos,byte[] edge_routing_info) throws IOException{
+		byte[] ED = {'E','D',(byte) Constants.Protocol.EDGE_MAJOR,(byte) Constants.Protocol.EDGE_MINOR};
+		sos.write(ED);
+		sos.writeSegment(edge_routing_info);
+		sos.flush();
+	}
+
 	private static void writeWhatsAppHeader(HandshakeState hs,NoiseOutputStream sos) throws IOException{
-		byte[] WA = new byte[]{(byte)'W',(byte)'A',(byte) Constants.Protocol.MAJOR,(byte) Constants.Protocol.MINOR};
+		byte[] WA = {(byte)'W',(byte)'A',(byte) Constants.Protocol.MAJOR,(byte) Constants.Protocol.MINOR};
 		sos.write(WA);
 		hs.setPrologue(WA,0,WA.length);
 		sos.flush();

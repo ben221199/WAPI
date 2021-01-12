@@ -379,6 +379,7 @@ public class FunXMPP{
 
 	public static class Node{
 
+		private Token tagToken;
 		private String tag;
 		private List<Attribute> attributes = new ArrayList<>();
 		private List<Node> children = new ArrayList<>();
@@ -390,7 +391,8 @@ public class FunXMPP{
 
 			int size = list.items.size();
 
-			node.tag = list.items.get(offset++).getString();
+			node.tagToken = list.items.get(offset++);
+			node.tag = node.tagToken.getString();
 
 			int attribCount = (size - 2 + size % 2) / 2;
 			for(int i=0;i<attribCount;i++){
@@ -424,7 +426,7 @@ public class FunXMPP{
 			for(Attribute attr : this.attributes){
 				output.append(" ").append(attr.key).append("=\"").append(attr.value).append("\"");
 			}
-			if(this.data==null && this.children.size()==0){
+			if(this.data==null && this.children.size()==0 && this.tagToken.token!=2){
 				output.append("/>");
 			}else{
 				output.append(">");

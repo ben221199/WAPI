@@ -12,6 +12,9 @@ public class FunInputStream extends NoiseInputStream{
 
 	public String readXML() throws IOException{
 		byte[] tokens = this.readDecryptedSegment();
+		if(tokens==null){
+			return null;
+		}
 		return FunXMPP.decode(Arrays.copyOfRange(tokens,1,tokens.length));
 	}
 }
