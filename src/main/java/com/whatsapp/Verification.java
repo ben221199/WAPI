@@ -80,18 +80,18 @@ public class Verification{
 		return Base64.getEncoder().encodeToString(hash.digest());
 	}
 
-	public static String calculateNokiaToken(String phoneNumber){
-		String $const = "PdA2DJyKoUrwLw1Bg6EIhzh502dF9noR9uFCllGk";
-		String releaseTime = "1452554789539"; // 2.13.30
-		MessageDigest md5;
-		try{
-			md5 = MessageDigest.getInstance("MD5");
-		}catch(NoSuchAlgorithmException e){
-			return null;
-		}
-		md5.update(($const+releaseTime+phoneNumber).getBytes());
-		return Main.bytesToHex(md5.digest());
-	}
+//	public static String calculateNokiaToken(String phoneNumber){
+//		String $const = "PdA2DJyKoUrwLw1Bg6EIhzh502dF9noR9uFCllGk";
+//		String releaseTime = "1452554789539"; // 2.13.30
+//		MessageDigest md5;
+//		try{
+//			md5 = MessageDigest.getInstance("MD5");
+//		}catch(NoSuchAlgorithmException e){
+//			return null;
+//		}
+//		md5.update(($const+releaseTime+phoneNumber).getBytes());
+//		return Main.bytesToHex(md5.digest());
+//	}
 
 	private static String runConnection(HttpURLConnection conn) throws IOException{
 		conn.connect();
