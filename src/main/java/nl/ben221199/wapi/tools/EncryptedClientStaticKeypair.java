@@ -43,7 +43,7 @@ public class EncryptedClientStaticKeypair{
 			throw new RuntimeException("The type should be 2.");
 		}
 		String sb2 = EncryptedClientStaticKeypair.doSomething(SOMETOKEN)+Base64.getEncoder().encodeToString(this.password);
-		SecretKeySpec secretKeySpec = new SecretKeySpec(EncryptedClientStaticKeypair.doSomething2(sb2,this.salt),"AES/OFB/NoPadding");
+		SecretKeySpec secretKeySpec = new SecretKeySpec(EncryptedClientStaticKeypair.doSomething2(sb2,this.salt),"AES");//AES/OFB/NoPadding
 		Cipher instance = Cipher.getInstance("AES/OFB/NoPadding");
 		instance.init(Cipher.DECRYPT_MODE,secretKeySpec,new IvParameterSpec(this.iv));
 		return instance.doFinal(this.ciphertext);
