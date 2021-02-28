@@ -15,6 +15,7 @@ public class FunInputStream extends NoiseInputStream{
 		if(tokens==null){
 			return null;
 		}
+		//TODO Fix flags
 		return FunXMPP.decode(Arrays.copyOfRange(tokens,1,tokens.length));
 	}
 }

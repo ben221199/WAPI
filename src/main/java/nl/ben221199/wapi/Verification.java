@@ -54,6 +54,11 @@ public class Verification{
 		return Verification.runConnection(conn);
 	}
 
+	/**
+	 * Calculate token for Android by internal number
+	 * @param internalNumber Internal number
+	 * @return String
+	 */
 	public static String calculateAndroidToken(String internalNumber){
 		byte[] keyDecoded = Base64.getDecoder().decode(Constants.Verification.PRIVATE_KEY);
 		byte[] sigDecoded = Base64.getDecoder().decode(Constants.Verification.CERTIFICATE_APK);

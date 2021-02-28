@@ -9,6 +9,7 @@ import java.util.List;
 
 import nl.ben221199.wapi.protocol.WA40;
 
+import nl.ben221199.wapi.protocol.WA41;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
@@ -22,6 +23,11 @@ public class FunXMPP{
 		if(major==0x04 && minor==0x00){
 			FunXMPP.dictionary = WA40.getDictionary();
 			FunXMPP.secondaryDictionary = WA40.getSecondaryDictionary();
+			return;
+		}
+		if(major==0x04 && minor==0x01){
+			FunXMPP.dictionary = WA41.getDictionary();
+			FunXMPP.secondaryDictionary = WA41.getSecondaryDictionary();
 			return;
 		}
 		throw new RuntimeException("Protocol version not implemented");
@@ -704,7 +710,7 @@ public class FunXMPP{
 			if(str==null){
 				return new Token((byte) 0);
 			}
-			for(int i=0;i<FunXMPP.dictionary.length;i++){
+			for(int i=1;i<FunXMPP.dictionary.length;i++){
 				if(FunXMPP.dictionary[i].equals(str)){
 					return new Token((byte) i);
 				}

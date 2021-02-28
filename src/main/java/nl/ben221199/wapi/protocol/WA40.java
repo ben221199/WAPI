@@ -4,7 +4,7 @@ public class WA40{
 
 	public static String[] getDictionary(){
 		return new String[]{
-				"",
+				null,
 				"stream:stream",	//OPENING TAG
 				"stream:stream",	//CLOSING TAG
 				"type",
