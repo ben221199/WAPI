@@ -33,7 +33,15 @@ public class FunXMPP{
 		throw new RuntimeException("Protocol version not implemented");
 	}
 
+	private static void ensureDictionaries(){
+		if(FunXMPP.dictionary==null || FunXMPP.secondaryDictionary==null){
+			throw new RuntimeException("FunXMPP version is not set.");
+		}
+	}
+
 	public static String decode(byte[] tokens){
+		FunXMPP.ensureDictionaries();
+
 		ByteBuffer bb = ByteBuffer.wrap(tokens);
 
 		Token t = Token.from(bb);
@@ -45,6 +53,8 @@ public class FunXMPP{
 	}
 
 	public static byte[] encode(String xml){
+		FunXMPP.ensureDictionaries();
+
 		FunXMPP.Node node = FunXMPP.Node.from(xml);
 		return node.getToken().getBytes();
 	}
@@ -304,7 +314,13 @@ public class FunXMPP{
 			if(this.user==null || this.server==null){
 				return "";
 			}
-			return this.user.getString()+"@"+this.server.getString();
+			String user = this.user.getString();
+			String jid = "";
+			if(user!=null){
+				jid = user+"@";
+			}
+			jid += this.server.getString();
+			return jid;
 		}
 
 	}
@@ -603,7 +619,7 @@ public class FunXMPP{
 			if("</stream:stream>".equalsIgnoreCase(xml)){
 				return Node.closed();
 			}
-			Element elem = Jsoup.parse(xml).body().child(0);
+			Element elem = Jsoup.parse(xml).body().children().first();
 			return Node.from(elem);
 		}
 
@@ -722,7 +738,10 @@ public class FunXMPP{
 					return t;
 				}
 			}
-			if(str.contains("@")){
+			if(str.endsWith("s.whatsapp.net") || str.endsWith("g.us")){
+				if(!str.contains("@")){
+					str += "@";
+				}
 				String[] jid = str.split("@");
 				Token user = this.writeString(jid[0]);
 				Token server = this.writeString(jid[1]);

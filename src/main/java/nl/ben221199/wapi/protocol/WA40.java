@@ -239,11 +239,13 @@ public class WA40{
 				"not-authorized",
 				"groups",
 				"voip",
-				"uploadfieldstat"};
+				"uploadfieldstat"
+		};
 	}
 
 	public static String[] getSecondaryDictionary(){
-		return new String[]{"lg",
+		return new String[]{
+				"lg",
 				"lc",
 				"s_t",
 				"s_o",
@@ -1266,7 +1268,8 @@ public class WA40{
 				"device",
 				"creative",
 				"Pacific/Tongatapu",
-				"Europe/Copenhagen"};
+				"Europe/Copenhagen",
+		};
 	}
 
 }
