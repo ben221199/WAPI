@@ -4,6 +4,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.Security;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 
@@ -16,9 +17,14 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.json.JSONArray;
 
 public class EncryptedClientStaticKeypair{
+
+	static{
+		Security.addProvider(new BouncyCastleProvider());
+	}
 
 	private static final int TYPE = 2;
 
@@ -28,9 +34,9 @@ public class EncryptedClientStaticKeypair{
 	public final byte[] ciphertext;
 	public final byte[] iv;
 	public final byte[] salt;
-	public final byte[] password;
+	public final String password;
 
-	public EncryptedClientStaticKeypair(int type,byte[] ciphertext,byte[] iv,byte[] salt,byte[] password){
+	public EncryptedClientStaticKeypair(int type,byte[] ciphertext,byte[] iv,byte[] salt,String password){
 		this.type = type;
 		this.ciphertext = ciphertext;
 		this.iv = iv;
@@ -42,8 +48,8 @@ public class EncryptedClientStaticKeypair{
 		if(this.type!=2){
 			throw new RuntimeException("The type should be 2.");
 		}
-		String sb2 = EncryptedClientStaticKeypair.doSomething(SOMETOKEN)+Base64.getEncoder().encodeToString(this.password);
-		SecretKeySpec secretKeySpec = new SecretKeySpec(EncryptedClientStaticKeypair.doSomething2(sb2,this.salt),"AES");//AES/OFB/NoPadding
+		String sb2 = EncryptedClientStaticKeypair.doSomething(SOMETOKEN)+this.password;
+		SecretKeySpec secretKeySpec = new SecretKeySpec(EncryptedClientStaticKeypair.doSomething2(sb2,this.salt),"AES/OFB/NoPadding");
 		Cipher instance = Cipher.getInstance("AES/OFB/NoPadding");
 		instance.init(Cipher.DECRYPT_MODE,secretKeySpec,new IvParameterSpec(this.iv));
 		return instance.doFinal(this.ciphertext);
@@ -55,7 +61,7 @@ public class EncryptedClientStaticKeypair{
 		arr.put(Base64.getEncoder().encodeToString(this.ciphertext));
 		arr.put(Base64.getEncoder().encodeToString(this.iv));
 		arr.put(Base64.getEncoder().encodeToString(this.salt));
-		arr.put(Base64.getEncoder().encodeToString(this.password));
+		arr.put(this.password);
 		return arr;
 	}
 
@@ -72,7 +78,7 @@ public class EncryptedClientStaticKeypair{
 		Cipher instance = Cipher.getInstance("AES/OFB/NoPadding");
 		instance.init(Cipher.ENCRYPT_MODE, secretKeySpec,new IvParameterSpec(ivBytes));
 		byte[] ciphertext = instance.doFinal(client_static_keypair);
-		return new EncryptedClientStaticKeypair(EncryptedClientStaticKeypair.TYPE, ciphertext, ivBytes, saltBytes, passwordBytes);
+		return new EncryptedClientStaticKeypair(EncryptedClientStaticKeypair.TYPE, ciphertext, ivBytes, saltBytes, Base64.getEncoder().encodeToString(passwordBytes));
 	}
 
 	public static EncryptedClientStaticKeypair fromJSONArray(JSONArray arr){
@@ -80,7 +86,7 @@ public class EncryptedClientStaticKeypair{
 		byte[] ciphertext = Base64.getDecoder().decode(arr.getString(1));
 		byte[] random1 = Base64.getDecoder().decode(arr.getString(2));
 		byte[] random2 = Base64.getDecoder().decode(arr.getString(3));
-		byte[] random3 = Base64.getDecoder().decode(arr.getString(4));
+		String random3 = arr.getString(4);
 		return new EncryptedClientStaticKeypair(type,ciphertext,random1,random2,random3);
 	}
 
@@ -99,7 +105,7 @@ public class EncryptedClientStaticKeypair{
 		for (int i = 0; i < length; i++) {
 			passwordChars[i] = (char) bytes[i];
 		}
-		return new SecretKeySpec(SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1").generateSecret(new PBEKeySpec(passwordChars, salt, 16, 128)).getEncoded(), "AES").getEncoded();
+		return new SecretKeySpec(SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1And8bit").generateSecret(new PBEKeySpec(passwordChars, salt, 16, 128)).getEncoded(), "AES").getEncoded();
 	}
 
 }
