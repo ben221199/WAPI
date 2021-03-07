@@ -11,7 +11,6 @@ import java.util.List;
 import nl.ben221199.wapi.protocol.WA40;
 import nl.ben221199.wapi.protocol.WA41;
 
-import org.apache.commons.text.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 
@@ -67,8 +66,6 @@ public class FunXMPP{
 		public Token(byte token){
 			this.token = token;
 		}
-
-//		public Token(){}
 
 		public static Token from(ByteBuffer bb){
 			int b = bb.get() & 0xFF;
@@ -315,10 +312,22 @@ public class FunXMPP{
 
 	}
 
-	public static class Int8LengthArrayString extends Token{
+	private abstract static class AbstractDataHolder extends Token{
 
-		protected byte length;
+		protected int length;
 		protected byte[] data;
+
+		protected AbstractDataHolder(byte token){
+			super(token);
+		}
+
+		public byte[] getData(){
+			return this.data;
+		}
+
+	}
+
+	public static class Int8LengthArrayString extends AbstractDataHolder{
 
 		public Int8LengthArrayString(){
 			super((byte) 0xFC);
@@ -329,7 +338,7 @@ public class FunXMPP{
 			if(data.length>=256){
 				throw new RuntimeException("Data is too long for a int8 data array.");
 			}
-			this.length = (byte) data.length;
+			this.length = data.length;
 			this.data = data;
 		}
 
@@ -353,15 +362,12 @@ public class FunXMPP{
 		}
 
 		public String getString(){
-			return null;
+			return new String(this.data);
 		}
 
 	}
 
-	public static class Int20LengthArrayString extends Token{
-
-		protected int length;
-		protected byte[] data;
+	public static class Int20LengthArrayString extends AbstractDataHolder{
 
 		public Int20LengthArrayString(){
 			super((byte) 0xFD);
@@ -372,7 +378,7 @@ public class FunXMPP{
 			if(data.length>=1048575L){
 				throw new RuntimeException("Data is too long for a int20 data array.");
 			}
-			this.length = (byte) data.length;
+			this.length = data.length;
 			this.data = data;
 		}
 
@@ -396,15 +402,12 @@ public class FunXMPP{
 		}
 
 		public String getString(){
-			return null;
+			return new String(this.data);
 		}
 
 	}
 
-	public static class Int31LengthArrayString extends Token{
-
-		protected int length;
-		protected byte[] data;
+	public static class Int31LengthArrayString extends AbstractDataHolder{
 
 		public Int31LengthArrayString(){
 			super((byte) 0xFE);
@@ -415,7 +418,7 @@ public class FunXMPP{
 			if(data.length>=2147483647L){
 				throw new RuntimeException("Data is too long for a int31 data array.");
 			}
-			this.length = (byte) data.length;
+			this.length = data.length;
 			this.data = data;
 		}
 
@@ -439,15 +442,12 @@ public class FunXMPP{
 		}
 
 		public String getString(){
-			return null;
+			return new String(this.data);
 		}
 
 	}
 
-	private static class PackedNibble extends Token{
-
-		protected int length;
-		protected byte[] data;
+	private static class PackedNibble extends AbstractDataHolder{
 
 		public PackedNibble(){
 			super((byte) 0xFF);
@@ -455,6 +455,7 @@ public class FunXMPP{
 
 		public PackedNibble(byte[] data){
 			this();
+			this.length = data.length;
 			this.data = data;
 		}
 
@@ -475,12 +476,21 @@ public class FunXMPP{
 			byte[] ret = new byte[(startByte & 0x7F)*2];
 			for(int i=0;i<(startByte & 0x7F);i++){
 				byte currByte = packed[i];
-				ret[i*2] = PackedNibble.unpackByte((currByte & 0xF0) >> 4);
-				ret[i*2+1] = PackedNibble.unpackByte(currByte & 0x0F);
+				byte firstNibble = (byte) ((currByte & 0xF0) >> 4);
+				byte secondNibble = (byte) (currByte & 0x0F);
+				if(firstNibble>11){
+					continue;
+				}
+				ret[i*2] = PackedNibble.unpackByte(firstNibble);
+				if(secondNibble>11){
+					continue;
+				}
+				ret[i*2+1] = PackedNibble.unpackByte(secondNibble);
 			}
 			if((startByte >> 7)==0){
-				ret = Arrays.copyOfRange(ret,0,ret.length-1); // ret[:len(ret)-1];
+				ret = Arrays.copyOfRange(ret,0,ret.length-1);
 			}
+//			System.out.println("N "+new String(ret));
 			return ret;
 		}
 
@@ -503,15 +513,12 @@ public class FunXMPP{
 		}
 
 		public String getString(){
-			return null;
+			return new String(this.data);
 		}
 
 	}
 
-	private static class PackedHex extends Token{
-
-		protected int length;
-		protected byte[] data;
+	private static class PackedHex extends AbstractDataHolder{
 
 		public PackedHex(){
 			super((byte) 0xFB);
@@ -519,6 +526,7 @@ public class FunXMPP{
 
 		public PackedHex(byte[] data){
 			this();
+			this.length = data.length;
 			this.data = data;
 		}
 
@@ -539,12 +547,21 @@ public class FunXMPP{
 			byte[] ret = new byte[(startByte & 0x7F)*2];
 			for(int i=0;i<(startByte & 0x7F);i++){
 				byte currByte = packed[i];
-				ret[i*2] = PackedHex.unpackByte((currByte & 0xF0) >> 4);
-				ret[i*2+1] = PackedHex.unpackByte(currByte & 0x0F);
+				byte firstNibble = (byte) ((currByte & 0xF0) >> 4);
+				byte secondNibble = (byte) (currByte & 0x0F);
+				if(firstNibble>11){
+					continue;
+				}
+				ret[i*2] = PackedHex.unpackByte(firstNibble);
+				if(secondNibble>11){
+					continue;
+				}
+				ret[i*2+1] = PackedHex.unpackByte(secondNibble);
 			}
 			if((startByte >> 7)==0){
-				ret = Arrays.copyOfRange(ret,0,ret.length-1);// ret[:len(ret)-1];
+				ret = Arrays.copyOfRange(ret,0,ret.length-1);
 			}
+//			System.out.println("H "+new String(ret));
 			return ret;
 		}
 
@@ -556,7 +573,7 @@ public class FunXMPP{
 			}else if(value==11){
 				return '.';
 			}else if(value==15){
-				return '\0';
+				return 0;
 			}
 			throw new RuntimeException("invalid nibble to unpack: " + value);
 		}
@@ -569,24 +586,36 @@ public class FunXMPP{
 		}
 
 		public String getString(){
-			return null;
+			return new String(this.data);
 		}
 
 	}
 
 	public static class Node{
 
-		private Token tagToken;
-		private String tag;
+		private static final byte STREAMSTART = 1;
+		private static final byte STREAMEND = 2;
+
+		public static final String XMLSTREAMSTART = "<stream:stream>";
+		public static final String XMLSTREAMEND = "</stream:stream>";
+
+		private Token tag;
 		private List<Attribute> attributes = new ArrayList<>();
 		private List<Node> children = new ArrayList<>();
-		private String data;
+		private byte[] data;
 
-		public static Node closed(){
-			Node node = new Node();
-			node.tagToken = new Token((byte) 2);
-			node.tag = node.tagToken.getString();
-			return node;
+		private Node(){}
+
+		private Node(Token tag){
+			this.tag = tag;
+		}
+
+		public static Node start(){
+			return new Node(new Token(Node.STREAMSTART));
+		}
+
+		public static Node end(){
+			return new Node(new Token(Node.STREAMEND));
 		}
 
 		public static Node from(AbstractList list){
@@ -595,14 +624,13 @@ public class FunXMPP{
 
 			int size = list.items.size();
 
-			node.tagToken = list.items.get(offset++);
-			node.tag = node.tagToken.getString();
+			node.tag = list.items.get(offset++);
 
 			int attribCount = (size - 2 + size % 2) / 2;
 			for(int i=0;i<attribCount;i++){
 				Attribute attr = new Attribute();
-				attr.key = list.items.get(offset++).getString();
-				attr.value = list.items.get(offset++).getString();
+				attr.key = list.items.get(offset++);
+				attr.value = list.items.get(offset++);
 				node.attributes.add(attr);
 			}
 
@@ -616,60 +644,68 @@ public class FunXMPP{
 					node.children.add(Node.from((AbstractList) t));
 				}
 			}else{
-				node.data = child.getString();
+				if(child instanceof AbstractDataHolder){
+					node.data = ((AbstractDataHolder) child).getData();
+				}
 			}
 
 			return node;
 		}
 
 		public static Node from(String xml){
-			if("</stream:stream>".equalsIgnoreCase(xml)){
-				return Node.closed();
+			if(XMLSTREAMSTART.equalsIgnoreCase(xml)){
+				return Node.start();
+			}
+			if(XMLSTREAMEND.equalsIgnoreCase(xml)){
+				return Node.end();
 			}
 			Element elem = Jsoup.parse(xml).body().children().first();
 			return Node.from(elem);
 		}
 
 		private static Node from(Element elem){
-			Node n = new Node();
-
-			n.tag = elem.tagName();
+			Token tag =  Node.writeString(elem.tagName());
+			if(tag==null){
+				return null;
+			}
+			if(tag.token==STREAMSTART){
+				return Node.start();
+			}
+			if(tag.token==STREAMEND){
+				return Node.end();
+			}
+			Node n = new Node(tag);
 
 			for(org.jsoup.nodes.Attribute a : elem.attributes()){
-				n.attributes.add(new Attribute(a.getKey(),a.getValue()));
+				n.attributes.add(new Attribute(Node.writeString(a.getKey()),Node.writeString(a.getValue())));
 			}
 			for(Element e : elem.children()){
 				n.children.add(Node.from(e));
 			}
 
 			if(!elem.ownText().isEmpty()){
-				n.data = elem.ownText();
+				n.data = Base64.getDecoder().decode(elem.ownText());
 			}
 
 			return n;
 		}
 
 		public String getString(){
-			StringBuilder output = new StringBuilder();
-
-			output.append("<");
-			if(this.tagToken!=null && this.tagToken.token==2){
-				output.append("/");
+			if(this.tag.token==Node.STREAMSTART){
+				return Node.XMLSTREAMSTART;
 			}
-			output.append(this.tag);
+			if(this.tag.token==Node.STREAMEND){
+				return Node.XMLSTREAMEND;
+			}
+
+			StringBuilder output = new StringBuilder();
+			output.append("<");
+			output.append(this.tag.getString());
 			for(Attribute attr : this.attributes){
-				output.append(" ").append(attr.key).append("=\"").append(attr.value).append("\"");
+				output.append(" ").append(attr.key.getString()).append("=\"").append(attr.value.getString()).append("\"");
 			}
 			if(this.data==null && this.children.size()==0){
-				if(this.tagToken!=null && this.tagToken.token==1){
-					output.append(">");
-				}else{
-					if(this.tagToken!=null && this.tagToken.token==2){
-						output.append(">");
-					}else{
-						output.append("/>");
-					}
-				}
+				output.append("/>");
 			}else{
 				output.append(">");
 				if(this.data==null){
@@ -677,9 +713,9 @@ public class FunXMPP{
 						output.append(child.getString());
 					}
 				}else{
-					output.append(StringEscapeUtils.escapeXml11(this.data));
+					output.append(Base64.getEncoder().encodeToString(this.data));
 				}
-				output.append("</").append(this.tag).append(">");
+				output.append("</").append(this.tag.getString()).append(">");
 			}
 
 			return output.toString();
@@ -697,39 +733,44 @@ public class FunXMPP{
 			}else{
 				nodeList = new ShortList();
 			}
-
-			if(this.tagToken==null){
-				nodeList.items.add(this.writeString(this.tag));
-			}else{
-				nodeList.items.add(this.tagToken);
-			}
+			nodeList.items.add(this.tag);
 			for(Attribute a : this.attributes){
-				nodeList.items.add(this.writeString(a.key));
-				nodeList.items.add(this.writeString(a.value));
+				nodeList.items.add(a.key);
+				nodeList.items.add(a.value);
 			}
 			if(this.children.size()>0){
-//				if(this.children.size()==1){
-//					nodeList.items.add(this.children.get(0).getToken());
-//				}else{
-					AbstractList childList;
-					if(this.children.size()>=256){
-						childList = new LongList();
-					}else{
-						childList = new ShortList();
-					}
-					for(Node childNode : this.children){
-						childList.items.add(childNode.getToken());
-					}
-					nodeList.items.add(childList);
-//				}
+				AbstractList childList;
+				if(this.children.size()>=256){
+					childList = new LongList();
+				}else{
+					childList = new ShortList();
+				}
+				for(Node childNode : this.children){
+					childList.items.add(childNode.getToken());
+				}
+				nodeList.items.add(childList);
 			}else if(this.data!=null){
-				nodeList.items.add(this.writeString(this.data));
+				nodeList.items.add(Node.writeBytes(this.data));
 			}
 
 			return nodeList;
 		}
 
-		private Token writeString(String str){
+		private static Token writeBytes(byte[] bytes){
+			//TODO Packed Nibble and packed Hex
+			if(bytes.length<=255L){
+				return new Int8LengthArrayString(bytes);
+			}
+			if(bytes.length<=1048575L){
+				return new Int20LengthArrayString(bytes);
+			}
+			if(bytes.length<=2147483647L){
+				return new Int31LengthArrayString(bytes);
+			}
+			return null;
+		}
+
+		private static Token writeString(String str){
 			if(str==null){
 				return new Token((byte) 0);
 			}
@@ -748,45 +789,35 @@ public class FunXMPP{
 					str += "@";
 				}
 				String[] jid = str.split("@");
-				Token user = this.writeString(jid[0]);
-				Token server = this.writeString(jid[1]);
+				Token user = Node.writeString(jid[0]);
+				Token server = Node.writeString(jid[1]);
 				JabberId t = new JabberId();
 				t.user = user;
 				t.server = server;
 				return t;
 			}
-			//TODO Packed Nibble and packed Hex
-			if(str.length()<=255L){
-				return new Int8LengthArrayString(str.getBytes());
-			}
-			if(str.length()<=1048575L){
-				return new Int20LengthArrayString(str.getBytes());
-			}
-			if(str.length()<=2147483647L){
-				return new Int31LengthArrayString(str.getBytes());
-			}
-			return null;
+			return Node.writeBytes(str.getBytes());
 		}
 
 		@Override
 		public String toString() {
 			return "Node{" +
-					"tag='" + tag + '\'' +
+					"tag=" + tag +
 					", attributes=" + attributes +
 					", children=" + children +
-					", data='" + data + '\'' +
+					", data=" + Arrays.toString(data) +
 					'}';
 		}
 
 		private static class Attribute{
 
-			private String key;
-			private String value;
+			private Token key;
+			private Token value;
 
 			public Attribute(){
 			}
 
-			public Attribute(String key,String value){
+			public Attribute(Token key,Token value){
 				this.key = key;
 				this.value = value;
 			}

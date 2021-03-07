@@ -270,4 +270,36 @@ public class FunXMPPTest{
 
 	//TODO Packed Nibble
 
+	@Test
+	public void testNodeStart(){
+		Assertions.assertEquals(FunXMPP.Node.XMLSTREAMSTART,FunXMPP.Node.start().getString());
+		Assertions.assertEquals(FunXMPP.Node.XMLSTREAMSTART,FunXMPP.Node.from(FunXMPP.Node.XMLSTREAMSTART).getString());
+	}
+
+	@Test
+	public void testNodeEnd(){
+		Assertions.assertEquals(FunXMPP.Node.XMLSTREAMEND,FunXMPP.Node.end().getString());
+		Assertions.assertEquals(FunXMPP.Node.XMLSTREAMEND,FunXMPP.Node.from(FunXMPP.Node.XMLSTREAMEND).getString());
+	}
+
+//	@Test
+//	public void testNode(){
+//		FunXMPP.Node.
+//
+//		byte[] data = "Hello world 31".getBytes();
+//		byte[] bytes = new byte[]{(byte) 0xFE,0,0,0,14,'H','e','l','l','o',' ','w','o','r','l','d',' ','3','1'};
+//
+//		FunXMPP.Int31LengthArrayString int31LengthArrayString = new FunXMPP.Int31LengthArrayString(data);
+//		Assertions.assertNotNull(int31LengthArrayString);
+//
+//		byte[] int31LengthArrayStringBytes = int31LengthArrayString.getBytes();
+//		Assertions.assertArrayEquals(bytes,int31LengthArrayStringBytes);
+//
+//		FunXMPP.Int31LengthArrayString int31LengthArrayString2 = (FunXMPP.Int31LengthArrayString) FunXMPP.Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
+//		Assertions.assertNotNull(int31LengthArrayString2);
+//
+//		byte[] int31LengthArrayStringBytes2 = int31LengthArrayString2.getBytes();
+//		Assertions.assertArrayEquals(bytes,int31LengthArrayStringBytes2);
+//	}
+
 }
