@@ -17,14 +17,14 @@ import org.jsoup.nodes.Element;
 public class FunXMPP{
 
 	private static String[] dictionary;
-	private static String[] secondaryDictionary;
+	private static String[][] secondaryDictionary;
 
 	public static void setVersion(int major,int minor){
-		if(major==0x04 && minor==0x00){
-			FunXMPP.dictionary = WA40.getDictionary();
-			FunXMPP.secondaryDictionary = WA40.getSecondaryDictionary();
-			return;
-		}
+//		if(major==0x04 && minor==0x00){
+//			FunXMPP.dictionary = WA40.getDictionary();
+//			FunXMPP.secondaryDictionary = WA40.getSecondaryDictionary();
+//			return;
+//		}
 		if(major==0x04 && minor==0x01){
 			FunXMPP.dictionary = WA41.getDictionary();
 			FunXMPP.secondaryDictionary = WA41.getSecondaryDictionary();
@@ -162,9 +162,9 @@ public class FunXMPP{
 		}
 
 		public String getString(){
-			int n = this.token-236 & 0xFF;
+			int n = this.token-0xEC & 0xFF;
 			int n2 = this.secondaryToken & 0xFF;
-			return FunXMPP.secondaryDictionary[n2+n*256];
+			return FunXMPP.secondaryDictionary[n][n2];
 		}
 
 		@Override
@@ -780,8 +780,10 @@ public class FunXMPP{
 				}
 			}
 			for(int i=0;i<FunXMPP.secondaryDictionary.length;i++){
-				if(FunXMPP.secondaryDictionary[i].equals(str)){
-					return new SecondaryToken((byte) (0xEC+i/256),(byte) (i%256));
+				for(int j=0;j<FunXMPP.secondaryDictionary[i].length;j++){
+					if(FunXMPP.secondaryDictionary[i][j].equals(str)){
+						return new SecondaryToken((byte) (0xEC+i),(byte) (j));
+					}
 				}
 			}
 			if(str.endsWith("s.whatsapp.net") || str.endsWith("g.us")){
