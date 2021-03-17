@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Scanner;
 
@@ -12,35 +13,36 @@ import org.json.JSONObject;
 
 public class RegisterMain{
 
-	private static String id;// = "abcdeabcdeabcde12350";
-	private static String cc;// = "7";
-	private static String in;// = "9670154494";
-
-	public static void main(String... args) throws IOException{
-		KeyPair client_static_keypair = Config.client_static_keypair;
+	public static void main(String... args) throws IOException, NoSuchAlgorithmException{
+		KeyPair client_static_keypair = Config.generateClientStaticKeyPair();
 
 		Scanner s = new Scanner(System.in);
 
-		while(RegisterMain.id==null){
+		String final_id;
+		String final_cc;
+		String final_in;
+
+		while(true){
 			System.err.println("Enter your configuration Id:");
 			String id = s.nextLine();
 			if(id!=null && id.length()==20){
-				RegisterMain.id = id;
+				final_id = id;
 				break;
 			}
 			System.err.println("Id not valid. Should be 20 chars long.");
 		}
 		System.err.println("Enter your country code:");
-		RegisterMain.cc = s.nextLine();
+		final_cc = s.nextLine();
 		System.err.println("Enter your internal number:");
-		RegisterMain.in = s.nextLine();
+		final_in = s.nextLine();
 
 		String existData = Verification.exist(
+				Constants.Verification.Android.USER_AGENT,
 				"authkey="+ URLEncoder.encode(Base64.getEncoder().encodeToString(client_static_keypair.getPublic().getEncoded()),"UTF-8"),
-				"in="+in,
-				"cc="+cc,
-				"id="+URLEncoder.encode(id,"UTF-8"));
-		FileOutputStream existOUT = new FileOutputStream(new File(id+"_exist.json"));
+				"in="+final_in,
+				"cc="+final_cc,
+				"id="+URLEncoder.encode(final_id,"UTF-8"));
+		FileOutputStream existOUT = new FileOutputStream(new File(final_id+"_exist.json"));
 		existOUT.write(existData.getBytes());
 		existOUT.close();
 		JSONObject existJSON = new JSONObject(existData);
@@ -58,19 +60,20 @@ public class RegisterMain{
 		System.err.println("Enter your method (sms/voice):");
 		String method = s.nextLine();
 
-		String token = Verification.calculateAndroidToken(in);
+		String token = Verification.calculateToken(final_in);
 		if(token==null){
 			System.err.println("Somehow the token is null.");
 			return;
 		}
 		String codeData = Verification.code(
+				Constants.Verification.Android.USER_AGENT,
 				"authkey="+ URLEncoder.encode(Base64.getEncoder().encodeToString(client_static_keypair.getPublic().getEncoded()),"UTF-8"),
-				"in="+in,
-				"cc="+cc,
+				"in="+final_in,
+				"cc="+final_cc,
 				"token="+URLEncoder.encode(token,"UTF-8"),
-				"id="+URLEncoder.encode(id,"UTF-8"),
+				"id="+URLEncoder.encode(final_id,"UTF-8"),
 				"method="+method);
-		FileOutputStream codeOUT = new FileOutputStream(new File(id+"_code.json"));
+		FileOutputStream codeOUT = new FileOutputStream(new File(final_id+"_code.json"));
 		codeOUT.write(codeData.getBytes());
 		codeOUT.close();
 		JSONObject codeJSON = new JSONObject(codeData);
@@ -89,12 +92,13 @@ public class RegisterMain{
 		s.nextLine();
 
 		String registerData = Verification.register(
+				Constants.Verification.Android.USER_AGENT,
 				"authkey="+ URLEncoder.encode(Base64.getEncoder().encodeToString(client_static_keypair.getPublic().getEncoded()),"UTF-8"),
-				"in="+in,
-				"cc="+cc,
+				"in="+final_in,
+				"cc="+final_cc,
 				"code="+code,
-				"id="+URLEncoder.encode(id,"UTF-8"));
-		FileOutputStream registerOUT = new FileOutputStream(new File(id+"_register.json"));
+				"id="+URLEncoder.encode(final_id,"UTF-8"));
+		FileOutputStream registerOUT = new FileOutputStream(new File(final_id+"_register.json"));
 		registerOUT.write(registerData.getBytes());
 		registerOUT.close();
 		JSONObject registerJSON = new JSONObject(registerData);
@@ -104,6 +108,9 @@ public class RegisterMain{
 			System.err.println("The verification process is not done. Something went wrong. Error: "+registerJSON);
 		}
 
+		Config.saveClientStaticKeyPair(final_id,client_static_keypair);
+		Config.saveCountryCode(final_id,final_cc);
+		Config.saveInternalNumber(final_id,final_in);
 	}
 
 }
