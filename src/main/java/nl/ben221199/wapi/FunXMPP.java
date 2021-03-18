@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
+import nl.ben221199.wapi.protocol.WA02;
 import nl.ben221199.wapi.protocol.WA40;
 import nl.ben221199.wapi.protocol.WA41;
 
@@ -20,6 +21,11 @@ public class FunXMPP{
 	private static String[][] secondaryDictionary;
 
 	public static void setVersion(int major,int minor){
+		if(major==0x00 && minor==0x02){
+			FunXMPP.dictionary = WA02.getDictionary();
+			FunXMPP.secondaryDictionary = WA02.getSecondaryDictionary();
+			return;
+		}
 //		if(major==0x04 && minor==0x00){
 //			FunXMPP.dictionary = WA40.getDictionary();
 //			FunXMPP.secondaryDictionary = WA40.getSecondaryDictionary();
