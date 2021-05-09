@@ -6,12 +6,18 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
+import java.security.Security;
 import java.util.Base64;
 import java.util.Scanner;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.json.JSONObject;
 
 public class RegisterMain{
+
+	static{
+		Security.addProvider(new BouncyCastleProvider());
+	}
 
 	public static void main(String... args) throws IOException, NoSuchAlgorithmException{
 		KeyPair client_static_keypair = Config.generateClientStaticKeyPair();
@@ -38,6 +44,7 @@ public class RegisterMain{
 
 		String existData = Verification.exist(
 				Constants.Verification.Android.USER_AGENT,
+				true,
 				"authkey="+ URLEncoder.encode(Base64.getEncoder().encodeToString(client_static_keypair.getPublic().getEncoded()),"UTF-8"),
 				"in="+final_in,
 				"cc="+final_cc,
@@ -67,6 +74,7 @@ public class RegisterMain{
 		}
 		String codeData = Verification.code(
 				Constants.Verification.Android.USER_AGENT,
+				true,
 				"authkey="+ URLEncoder.encode(Base64.getEncoder().encodeToString(client_static_keypair.getPublic().getEncoded()),"UTF-8"),
 				"in="+final_in,
 				"cc="+final_cc,
@@ -93,6 +101,7 @@ public class RegisterMain{
 
 		String registerData = Verification.register(
 				Constants.Verification.Android.USER_AGENT,
+				true,
 				"authkey="+ URLEncoder.encode(Base64.getEncoder().encodeToString(client_static_keypair.getPublic().getEncoded()),"UTF-8"),
 				"in="+final_in,
 				"cc="+final_cc,
