@@ -2,29 +2,19 @@ package nl.ben221199.wapi;
 
 import com.google.protobuf.ByteString;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.google.protobuf.DescriptorProtos;
-import nl.ben221199.wapi.tools.EncryptedClientStaticKeypair;
-import org.json.JSONArray;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.whispersystems.libsignal.IdentityKeyPair;
 import org.whispersystems.libsignal.InvalidKeyException;
-import org.whispersystems.libsignal.UntrustedIdentityException;
 import org.whispersystems.libsignal.ecc.Curve;
 import org.whispersystems.libsignal.ecc.ECKeyPair;
 import org.whispersystems.libsignal.state.PreKeyBundle;
@@ -33,10 +23,6 @@ import org.whispersystems.libsignal.state.SignalProtocolStore;
 import org.whispersystems.libsignal.state.SignedPreKeyRecord;
 import org.whispersystems.libsignal.util.KeyHelper;
 import org.whispersystems.libsignal.util.Medium;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 
 public class Main implements Runnable{
 
@@ -71,41 +57,7 @@ public class Main implements Runnable{
 		return alicePreKeyBundle;
 	}
 
-	public static void main(String... args) throws IOException, InvalidKeyException, UntrustedIdentityException, NoSuchPaddingException, java.security.InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, InvalidKeySpecException {
-		InputStream is = Main.class.getResourceAsStream("/wa4.proto.dat");
-		System.err.println(is);
-		DescriptorProtos.FileDescriptorProto.parseFrom(is);
-//		DescriptorProtos.FileDescriptorProto fp = DescriptorProtos.FileDescriptorProto.par(is);
-//		System.err.println("A"+fp.getName());
-		System.exit(0);
-
-//		FunXMPP.setVersion(4,1);
-//		byte[] first = Hex.toBytes("f805fc076661696c757265e3ecad5658");
-//		System.out.println(FunXMPP.decode(first));
-////		System.err.println(Base64.getEncoder().encodeToString(Config.client_static_keypair.getPublic().getEncoded()));
-////		System.err.println(Base64.getEncoder().encodeToString(Config.client_static_keypair.getPrivate().getEncoded()));
-//		System.out.println(Base64.getEncoder().encodeToString(Config.PAYLOAD.toByteArray()));
-//		System.err.println(Verification.calculateAndroidToken("612322954"));
-//		System.out.println(Base64.getEncoder().encodeToString(Verification.calculateAndroidToken("612322954")));
-//		System.exit(0);
-//		System.err.println(Base64.getEncoder().encodeToString(Config.client_static_keypair.getEncoded()));
-//		Config.client_static_keypair.getPrivate();
-//		FunXMPP.setVersion(4,1);
-//		new Main(null,null).setKeys();
-//		System.exit(0);
-		System.err.println(Base64.getEncoder().encodeToString(EncryptedClientStaticKeypair.fromJSONArray(new JSONArray("[2,\"BBv3YV+3725TqgicuL419tRh78eyYu5QDR5I8MFlHM988stxW2OQGU8c6cua3Fvx2x1zKBEftf303ttLTPIEqA\",\"ZGseQMrBBEW2Bm9a1xRHwQ\",\"LUYKnQ\",\"u94yEanwSdpOoU3iVVvKJw\"]")).decrypt()));
-//
-		System.exit(0);
-//		SignalProtocolAddress receipient = new SignalProtocolAddress("31612322954@s.whatsapp.net",1);
-//		SignalProtocolStore store = new InMemorySignalProtocolStore(KeyHelper.generateIdentityKeyPair(),KeyHelper.generateRegistrationId(true));
-//		SessionBuilder sessionBuilder = new SessionBuilder(store,receipient);
-//		sessionBuilder.process(createAlicePreKeyBundle(store));
-//
-//		SessionCipher session_cipher = new SessionCipher(store,receipient);
-//
-//		System.err.println(Hex.fromBytes(session_cipher.encrypt("Hello world".getBytes()).serialize()));
-//		System.exit(0);
-
+	public static void main(String... args) throws IOException{
 		Scanner s = new Scanner(System.in);
 		System.err.println("Enter your configuration Id:");
 		String id = s.nextLine();
