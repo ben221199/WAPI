@@ -85,7 +85,7 @@ public class Config{
 				.setPushName("H_____________OI")
 				.setSessionId(5)
 				.setShortConnect(false)
-				.setConnectType(WA4Protos.ClientPayload.ConnectType.WIFI)
+				.setConnectType(WA4Protos.ClientPayload.ConnectType.WIFI_UNKNOWN)
 				.setUserAgent(userAgent).build();
 	}
 
