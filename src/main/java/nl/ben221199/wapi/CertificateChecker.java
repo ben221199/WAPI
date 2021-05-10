@@ -2,12 +2,12 @@ package nl.ben221199.wapi;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.southernstorm.noise.protocol.DHState;
-import nl.ben221199.wapi.protobuf.WhatsProtos;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.whatsapp.proto.WA4Protos;
 import org.whispersystems.curve25519.Curve25519;
 
 public class CertificateChecker{
@@ -18,8 +18,8 @@ public class CertificateChecker{
 		PUBKEYS.put("WhatsAppLongTerm1",new byte[]{20, 35, 117, 87, 77, 10, 88, 113, 102, (byte) 170, (byte) 231, 30, (byte) 190, 81, 100, 55, (byte) 196, (byte) 162, (byte) 139, 115, (byte) 227, 105, 92, 108, (byte) 225, (byte) 247, (byte) 249, 84, 93, (byte) 168, (byte) 238, 107});
 	}
 
-	public static boolean check(WhatsProtos.NoiseCertificate certificate, DHState remote) throws InvalidProtocolBufferException{
-		WhatsProtos.NoiseCertificate.Details details = WhatsProtos.NoiseCertificate.Details.parseFrom(certificate.getDetails());
+	public static boolean check(WA4Protos.NoiseCertificate certificate, DHState remote) throws InvalidProtocolBufferException{
+		WA4Protos.NoiseCertificate.Details details = WA4Protos.NoiseCertificate.Details.parseFrom(certificate.getDetails());
 		System.out.println("[] Certificate = "+certificate.toString().trim());
 		System.out.println("[] - Details = "+details.toString().trim());
 

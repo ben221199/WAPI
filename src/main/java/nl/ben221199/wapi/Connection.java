@@ -3,7 +3,7 @@ package nl.ben221199.wapi;
 import com.google.protobuf.ByteString;
 import com.southernstorm.noise.protocol.CipherStatePair;
 import com.southernstorm.noise.protocol.HandshakeState;
-import nl.ben221199.wapi.protobuf.WhatsProtos;
+import com.whatsapp.proto.WA4Protos;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.ShortBufferException;
@@ -24,12 +24,12 @@ public class Connection{
 	private KeyPair s;
 	private PublicKey rs;
 
-	private WhatsProtos.HandshakeMessage.ClientHello client_hello;
-	private WhatsProtos.HandshakeMessage.ServerHello server_hello;
-	private WhatsProtos.HandshakeMessage.ClientFinish client_finish;
+	private WA4Protos.HandshakeMessage.ClientHello client_hello;
+	private WA4Protos.HandshakeMessage.ServerHello server_hello;
+	private WA4Protos.HandshakeMessage.ClientFinish client_finish;
 
-	private WhatsProtos.NoiseCertificate noiseCertificate;
-	private WhatsProtos.ClientPayload clientPayload;
+	private WA4Protos.NoiseCertificate noiseCertificate;
+	private WA4Protos.ClientPayload clientPayload;
 
 	public Connection(String host,int port) throws IOException{
 		this.socket = new Socket(host,port);
@@ -50,7 +50,7 @@ public class Connection{
 		return this;
 	}
 
-	public Connection setPayload(WhatsProtos.ClientPayload payload){
+	public Connection setPayload(WA4Protos.ClientPayload payload){
 		this.clientPayload = payload;
 		return this;
 	}
@@ -121,8 +121,8 @@ public class Connection{
 		System.arraycopy(buffer,0,client_hello_ephemeral,0,client_hello_ephemeral.length);
 		// => e
 		//System.err.println(new String(client_hello_ephemeral)+" ["+client_hello_ephemeral.length+"]");
-		WhatsProtos.HandshakeMessage.ClientHello client_hello = WhatsProtos.HandshakeMessage.ClientHello.newBuilder().setEphemeral(ByteString.copyFrom(client_hello_ephemeral)).build();
-		WhatsProtos.HandshakeMessage client_hello_message = WhatsProtos.HandshakeMessage.newBuilder().setClientHello(client_hello).build();
+		WA4Protos.HandshakeMessage.ClientHello client_hello = WA4Protos.HandshakeMessage.ClientHello.newBuilder().setEphemeral(ByteString.copyFrom(client_hello_ephemeral)).build();
+		WA4Protos.HandshakeMessage client_hello_message = WA4Protos.HandshakeMessage.newBuilder().setClientHello(client_hello).build();
 		out.writeSegment(client_hello_message.toByteArray());
 		out.flush();
 		System.out.println("[Client] "+client_hello_message.toString().trim());
@@ -133,12 +133,12 @@ public class Connection{
 		// <= e, ee, s, es
 		byte[] server_hello_data = in.readSegment();
 		//System.out.println(bytesToHex(server_hello_data));
-		WhatsProtos.HandshakeMessage server_hello_message = WhatsProtos.HandshakeMessage.parseFrom(server_hello_data);
+		WA4Protos.HandshakeMessage server_hello_message = WA4Protos.HandshakeMessage.parseFrom(server_hello_data);
 		if(!server_hello_message.hasServerHello()){
 			System.err.println("Doesn't have server hello");
 			return;
 		}
-		WhatsProtos.HandshakeMessage.ServerHello server_hello = server_hello_message.getServerHello();
+		WA4Protos.HandshakeMessage.ServerHello server_hello = server_hello_message.getServerHello();
 		byte[] server_hello_buffer = server_hello.getEphemeral().concat(server_hello.getStatic().concat(server_hello.getPayload())).toByteArray();
 		System.err.println(ByteString.copyFrom(server_hello_buffer));
 		byte[] server_hello_info = new byte[4096];
@@ -153,7 +153,7 @@ public class Connection{
 		System.out.println("P> "+server_hello_message.getServerHello().getEphemeral().size());
 		System.out.println("P> "+server_hello_message.getServerHello().getStatic().size());
 		System.out.println("P> "+server_hello_message.getServerHello().getPayload().size());
-		WhatsProtos.NoiseCertificate noiseCertificate = WhatsProtos.NoiseCertificate.parseFrom(server_hello_info);
+		WA4Protos.NoiseCertificate noiseCertificate = WA4Protos.NoiseCertificate.parseFrom(server_hello_info);
 		boolean isValid = CertificateChecker.check(noiseCertificate,this.handshake.getRemotePublicKey());
 		System.out.println("CC = "+isValid);
 		System.out.println("=======================================================");
@@ -176,7 +176,7 @@ public class Connection{
 		byte[] payloadBytes = ByteString.copyFrom(buffer2).substring(48,client_finish_length).toByteArray();
 		System.out.println("PP "+client_finish_payload.length+" & "+payloadBytes.length);
 
-		WhatsProtos.HandshakeMessage.ClientFinish client_finish = WhatsProtos.HandshakeMessage.ClientFinish.newBuilder()
+		WA4Protos.HandshakeMessage.ClientFinish client_finish = WA4Protos.HandshakeMessage.ClientFinish.newBuilder()
 				.setStatic(ByteString.copyFrom(staticBytes))
 				.setPayload(ByteString.copyFrom(payloadBytes))
 				.build();
@@ -187,7 +187,7 @@ public class Connection{
 		//System.err.println("<> "+bytesToHex(ByteString.copyFrom(buffer2).substring(64,client_finish_length).toByteArray()));
 		//System.err.println(client_finish_length);
 
-		WhatsProtos.HandshakeMessage client_finish_message = WhatsProtos.HandshakeMessage.newBuilder().setClientFinish(client_finish).build();
+		WA4Protos.HandshakeMessage client_finish_message = WA4Protos.HandshakeMessage.newBuilder().setClientFinish(client_finish).build();
 		System.out.println(client_finish_length+" / "+ByteString.copyFrom(buffer2).substring(48,client_finish_length));
 		out.writeSegment(client_finish_message.toByteArray());
 		//out.writeSegment("AAAAAAAAAAAAA".getBytes());

@@ -1,0 +1,183 @@
+package whatsapp;
+
+option java_package = "com.whatsapp.proto";
+
+message HandshakeMessage{
+	optional ClientHello client_hello = 2;
+	optional ServerHello server_hello = 3;
+	optional ClientFinish client_finish = 4;
+
+	message ClientHello{
+		optional bytes ephemeral = 1;
+		optional bytes static = 2;
+		optional bytes payload = 3;
+	}
+	message ServerHello{
+		optional bytes ephemeral = 1;
+		optional bytes static = 2;
+		optional bytes payload = 3;
+	}
+	message ClientFinish{
+		optional bytes static = 1;
+		optional bytes payload = 2;
+	}
+}
+
+message NoiseCertificate{
+  optional bytes details = 1;
+  optional bytes signature = 2;
+
+  message Details{
+    optional uint32 serial = 1;
+    optional string issuer = 2;
+    optional uint64 expires = 3;
+    optional string subject = 4;
+    optional bytes key = 5;
+  }
+}
+
+message ClientPayload{
+  optional uint64 username = 1;
+  optional bool passive = 3;
+  repeated ClientFeature client_features = 4;
+  optional UserAgent user_agent = 5;
+  optional WebInfo web_info = 6;
+  optional string push_name = 7;
+  optional sfixed32 session_id = 9;
+  optional bool short_connect = 10;
+  optional IOSAppExtension ios_app_extension = 30;
+  optional ConnectType connect_type = 12;
+  optional ConnectReason connect_reason = 13;
+  repeated sfixed32 shards = 14;
+  optional DNSSource dns_source = 15;
+  optional uint32 connect_attempt_count = 16;
+  optional uint32 agent = 17;
+  optional uint32 device = 18;
+  optional CompanionRegData reg_data = 19;
+
+  message UserAgent{
+    optional Platform platform = 1;
+    optional AppVersion app_version = 2;
+    optional string mcc = 3;
+    optional string mnc = 4;
+    optional string os_version = 5;
+    optional string manufacturer = 6;
+    optional string device = 7;
+    optional string os_build_number = 8;
+    optional string phone_id = 9;
+    optional ReleaseChannel release_channel = 10;
+    optional string locale_language_iso_639_1 = 11;
+    optional string local_country_iso_3166_1_alpha_2 = 12;
+    optional string device_board = 13;
+
+    message AppVersion{
+      optional uint32 primary = 1;
+      optional uint32 secondary = 2;
+      optional uint32 tertiary = 3;
+      optional uint32 quaternary = 4;
+    }
+    enum Platform{
+      ANDROID = 0;
+      IOS = 1;
+      WINDOWS_PHONE = 2;
+      BLACKBERRY = 3;
+      BLACKBERRYX = 4;
+      S40 = 5;
+      S60 = 6;
+      PYTHON_CLIENT = 7;
+      TIZEN = 8;
+      ENTERPRISE = 9;
+      SMB_ANDROID = 10;
+      KAIOS = 11;
+      SMB_IOS = 12;
+      WINDOWS = 13;
+      WEB = 14;
+    }
+    enum ReleaseChannel{
+      RELEASE = 0;
+      BETA = 1;
+      ALPHA = 2;
+      DEBUG = 3;
+    }
+}
+  message WebInfo{
+    optional string ref_token = 1;
+    optional string version = 2;
+    optional WebdPayload webd_payload = 3;
+
+    message WebdPayload{
+      optional bool uses_participant_in_key = 1;
+      optional bool supports_starred_messages = 2 [deprecated=true];
+      optional bool supports_document_messages = 3 [deprecated=true];
+      optional bool supports_url_messages = 4 [deprecated=true];
+      optional bool supports_media_retry = 5 [deprecated=true];
+      optional bool supports_e2e_image = 6 [deprecated=true];
+      optional bool supports_e2e_video = 7 [deprecated=true];
+      optional bool supports_e2e_audio = 8 [deprecated=true];
+      optional bool supports_e2e_document = 9 [deprecated=true];
+      optional string document_types = 10 [deprecated=true];
+      optional bytes features = 11;
+    }
+    enum ReleaseChannel{
+      RELEASE = 0;
+      BETA = 1;
+      ALPHA = 2;
+      DEBUG = 3;
+    }
+  }
+  message DNSSource{
+    optional DNSResolutionMethod dns_method = 15;
+    optional bool app_cached = 16;
+
+    enum DNSResolutionMethod{
+        SYSTEM = 0;
+        GOOGLE = 1;
+        HARDCODED = 2;
+        OVERRIDE = 3;
+        FALLBACK = 4;
+    }
+  }
+  message CompanionRegData{
+    optional bytes e_regid = 1;
+    optional bytes e_keytype = 2;
+    optional bytes e_ident = 3;
+    optional bytes e_skey_id = 4;
+    optional bytes e_skey_val = 5;
+    optional bytes e_skey_sig = 6;
+    optional bytes build_hash = 7;
+    optional bytes companion_props = 8;
+  }
+  enum ClientFeature{
+    NONE = 0;
+  }
+  enum IOSAppExtension{
+    SHARE_EXTENSION = 0;
+    SERVICE_EXTENSION = 1;
+    INTENTS_EXTENSION = 2;
+  }
+  enum ConnectReason{
+    PUSH = 0;
+    USER_ACTIVATED = 1;
+    SCHEDULED = 2;
+    ERROR_RECONNECT = 3;
+    NETWORK_SWITCH = 4;
+    PING_RECONNECT = 5;
+  }
+  enum ConnectType{
+    CELLULAR_UNKNOWN = 0;
+    WIFI_UNKNOWN = 1;
+    CELLULAR_EDGE = 100;
+    CELLULAR_IDEN = 101;
+    CELLULAR_UMTS = 102;
+    CELLULAR_EVDO = 103;
+    CELLULAR_GPRS = 104;
+    CELLULAR_HSDPA = 105;
+    CELLULAR_HSUPA = 106;
+    CELLULAR_HSPA = 107;
+    CELLULAR_CDMA = 108;
+    CELLULAR_1XRTT = 109;
+    CELLULAR_EHRPD = 110;
+    CELLULAR_LTE = 111;
+    CELLULAR_HSPAP = 112;
+  }
+}

@@ -4,7 +4,7 @@ import br.eti.balena.security.ecdh.curve25519.Curve25519PrivateKey;
 import br.eti.balena.security.ecdh.curve25519.Curve25519PublicKey;
 import com.southernstorm.noise.protocol.DHState;
 import com.southernstorm.noise.protocol.Noise;
-import nl.ben221199.wapi.protobuf.WhatsProtos;
+import com.whatsapp.proto.WA4Protos;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,6 +14,7 @@ import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.util.Arrays;
+import java.util.UUID;
 
 public class Config{
 
@@ -54,37 +55,37 @@ public class Config{
 //	}
 	public static PublicKey server_static_key = null;
 
-//	public static WhatsProtos.ClientPayload PAYLOAD = Config.getConfig();
+//	public static WA4Protos.ClientPayload PAYLOAD = Config.getConfig();
 
-	public static WhatsProtos.ClientPayload getConfig(long username){
-		WhatsProtos.ClientPayload.UserAgent.AppVersion appVersion = WhatsProtos.ClientPayload.UserAgent.AppVersion.newBuilder()
+	public static WA4Protos.ClientPayload getConfig(long username){
+		WA4Protos.ClientPayload.UserAgent.AppVersion appVersion = WA4Protos.ClientPayload.UserAgent.AppVersion.newBuilder()
 				.setPrimary(2)
 				.setSecondary(20)
 				.setTertiary(206)
 				.setQuaternary(22)
 				.build();
 
-		WhatsProtos.ClientPayload.UserAgent userAgent = WhatsProtos.ClientPayload.UserAgent.newBuilder()
-				.setPlatform(WhatsProtos.ClientPayload.UserAgent.Platform.ANDROID)
+		WA4Protos.ClientPayload.UserAgent userAgent = WA4Protos.ClientPayload.UserAgent.newBuilder()
+				.setPlatform(WA4Protos.ClientPayload.UserAgent.Platform.ANDROID)
 				//.setMcc("12")
 				//.setMnc("334534")
 				.setOsVersion("1.2.3.4")
 				.setManufacturer("Droid")
 				.setDevice("S5")
 				.setOsBuildNumber("1.0.5")
-				.setPhoneId("79117618517")
+				.setPhoneId(UUID.randomUUID().toString())
 				.setLocaleLanguageIso6391("nl")
 				.setLocalCountryIso31661Alpha2("NL")
 				.setAppVersion(appVersion)
 				.build();
 
-		return WhatsProtos.ClientPayload.newBuilder()
+		return WA4Protos.ClientPayload.newBuilder()
 				.setUsername(username)
 				.setPassive(true)
 				.setPushName("H_____________OI")
 				.setSessionId(5)
 				.setShortConnect(false)
-				.setConnectType(WhatsProtos.ClientPayload.ConnectType.WIFI)
+				.setConnectType(WA4Protos.ClientPayload.ConnectType.WIFI)
 				.setUserAgent(userAgent).build();
 	}
 
