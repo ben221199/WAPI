@@ -1,7 +1,5 @@
 package nl.ben221199.wapi;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
@@ -44,16 +42,18 @@ public class RegisterMain{
 		final_in = s.nextLine();
 		config.setInternalNumber(final_in);
 
-		String existData = Verification.exist(
-				Constants.Verification.Android.USER_AGENT,
-				true,
+		String[] existParams = new String[]{
 				"authkey="+ URLEncoder.encode(Base64.encode(config.getClientStaticKeypair().getPublic().getEncoded()),"UTF-8"),
 				"in="+final_in,
 				"cc="+final_cc,
-				"id="+URLEncoder.encode(final_id,"UTF-8"));
-		FileOutputStream existOUT = new FileOutputStream(new File(final_id+"_exist.json"));
-		existOUT.write(existData.getBytes());
-		existOUT.close();
+				"id="+URLEncoder.encode(final_id,"UTF-8"),
+		};
+		String existData = Verification.exist(
+				Constants.Verification.Android.USER_AGENT,
+				true,
+				existParams);
+		config.setString("__exist_request",String.join("&",existParams));
+		config.setString("__exist_response",existData);
 		JSONObject existJSON = new JSONObject(existData);
 		if(existJSON.has("status") && "ok".equals(existJSON.getString("status"))){
 			System.err.println("This Id is linked to CC & IN. You could use it directly.");
@@ -79,18 +79,20 @@ public class RegisterMain{
 			System.err.println("Somehow the token is null.");
 			return;
 		}
-		String codeData = Verification.code(
-				Constants.Verification.Android.USER_AGENT,
-				true,
+		String[] codeParams = new String[]{
 				"authkey="+ URLEncoder.encode(Base64.encode(config.getClientStaticKeypair().getPublic().getEncoded()),"UTF-8"),
 				"in="+final_in,
 				"cc="+final_cc,
 				"token="+URLEncoder.encode(token,"UTF-8"),
 				"id="+URLEncoder.encode(final_id,"UTF-8"),
-				"method="+method);
-		FileOutputStream codeOUT = new FileOutputStream(new File(final_id+"_code.json"));
-		codeOUT.write(codeData.getBytes());
-		codeOUT.close();
+				"method="+method,
+		};
+		String codeData = Verification.code(
+				Constants.Verification.Android.USER_AGENT,
+				true,
+				codeParams);
+		config.setString("__code_request",String.join("&",codeParams));
+		config.setString("__code_response",codeData);
 		JSONObject codeJSON = new JSONObject(codeData);
 		if(codeJSON.has("status") && "sent".equals(codeJSON.getString("status"))){
 			System.err.println("The code is sent to the phone number.");
@@ -111,17 +113,19 @@ public class RegisterMain{
 		int code = s.nextInt();
 		s.nextLine();
 
-		String registerData = Verification.register(
-				Constants.Verification.Android.USER_AGENT,
-				true,
+		String[] registerParams = new String[]{
 				"authkey="+ URLEncoder.encode(Base64.encode(config.getClientStaticKeypair().getPublic().getEncoded()),"UTF-8"),
 				"in="+final_in,
 				"cc="+final_cc,
 				"code="+code,
-				"id="+URLEncoder.encode(final_id,"UTF-8"));
-		FileOutputStream registerOUT = new FileOutputStream(new File(final_id+"_register.json"));
-		registerOUT.write(registerData.getBytes());
-		registerOUT.close();
+				"id="+URLEncoder.encode(final_id,"UTF-8"),
+		};
+		String registerData = Verification.register(
+				Constants.Verification.Android.USER_AGENT,
+				true,
+				registerParams);
+		config.setString("__register_request",String.join("&",registerParams));
+		config.setString("__register_response",registerData);
 		JSONObject registerJSON = new JSONObject(registerData);
 		if(registerJSON.has("status") && "ok".equals(registerJSON.getString("status"))){
 			config.setEdgeRoutingInfo(Base64.decode(registerJSON.getString("edge_routing_info")));
