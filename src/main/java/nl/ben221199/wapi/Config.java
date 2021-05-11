@@ -2,9 +2,9 @@ package nl.ben221199.wapi;
 
 import br.eti.balena.security.ecdh.curve25519.Curve25519PrivateKey;
 import br.eti.balena.security.ecdh.curve25519.Curve25519PublicKey;
+
 import com.southernstorm.noise.protocol.DHState;
 import com.southernstorm.noise.protocol.Noise;
-import com.whatsapp.proto.WA4Protos;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,149 +12,101 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
 import java.util.Arrays;
-import java.util.UUID;
+
+import org.json.JSONObject;
 
 public class Config{
 
-//	public static String id = "gerdagerdagerdagerda";
-//	public static String cc = "7";
-//	public static String in = "9013691751";
-//	public static byte[] edge_routing_info = Base64.getDecoder().decode("CAwIAg==");
+	private JSONObject data;
 
-//	public static String id = "kaaskaaskaaskaaskaas";
-//	public static String cc = "7";
-//	public static String in = "9622766291";
-//	public static byte[] edge_routing_info = Base64.getDecoder().decode("CAwIAg==");
-
-//	public static String id = "abcdefabcdefabcdefab";
-//	public static String cc = "7";
-//	public static String in = "9631936675";
-//	public static byte[] edge_routing_info = null;//Base64.getDecoder().decode("CAUICA==");
-
-//	public static String id = "abcdefabcdefabcdefab";
-//	public static String cc = "7";
-//	public static String in = "9309676431";
-//	public static byte[] edge_routing_info = Base64.getDecoder().decode("CAUICA==");
-
-////	public static String id = "abcdefabcdefabcdefab";
-//	public static String cc = "972";
-//	public static String in = "503046237";
-//	public static byte[] edge_routing_info = Base64.getDecoder().decode("CAgIAg==");
-
-//	public static KeyPair client_static_keypair;
-//	static{
-//		try {
-//			client_static_keypair = Config.getClientStaticKeyPair();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		} catch (NoSuchAlgorithmException e) {
-//			e.printStackTrace();
-//		}
-//	}
-	public static PublicKey server_static_key = null;
-
-//	public static WA4Protos.ClientPayload PAYLOAD = Config.getConfig();
-
-	public static WA4Protos.ClientPayload getConfig(long username){
-		WA4Protos.ClientPayload.UserAgent.AppVersion appVersion = WA4Protos.ClientPayload.UserAgent.AppVersion.newBuilder()
-				.setPrimary(2)
-				.setSecondary(20)
-				.setTertiary(206)
-				.setQuaternary(22)
-				.build();
-
-		WA4Protos.ClientPayload.UserAgent userAgent = WA4Protos.ClientPayload.UserAgent.newBuilder()
-				.setPlatform(WA4Protos.ClientPayload.UserAgent.Platform.ANDROID)
-				//.setMcc("12")
-				//.setMnc("334534")
-				.setOsVersion("1.2.3.4")
-				.setManufacturer("Droid")
-				.setDevice("S5")
-				.setOsBuildNumber("1.0.5")
-				.setPhoneId(UUID.randomUUID().toString())
-				.setLocaleLanguageIso6391("nl")
-				.setLocalCountryIso31661Alpha2("NL")
-				.setAppVersion(appVersion)
-				.build();
-
-		return WA4Protos.ClientPayload.newBuilder()
-				.setUsername(username)
-				.setPassive(true)
-				.setPushName("H_____________OI")
-				.setSessionId(5)
-				.setShortConnect(false)
-				.setConnectType(WA4Protos.ClientPayload.ConnectType.WIFI_UNKNOWN)
-				.setUserAgent(userAgent).build();
+	public Config(){
+		this.data = new JSONObject();
 	}
 
-//	private static KeyPair getClientStaticKeyPair() throws IOException, NoSuchAlgorithmException {
-//		File keypairFile = new File(id+"_keypair.txt");
-//		if(keypairFile.exists()){
-//			FileInputStream fos = new FileInputStream(keypairFile);
-//			byte[] bytes = new byte[64];
-//			fos.read(bytes);
-//			fos.close();
-////			bytes = Base64.getDecoder().decode("yM8j4VCg5YSdITmx8bVyRJN6Ekrujri+9PZQLDxLlmxScul6forvBztjpU3ys8M94grJgCh1z10f2zDtzXaoNA");
-////			System.err.println("HASH = "+bytes.length+" "+Base64.getEncoder().encodeToString(bytes));
-//			return new KeyPair(new Curve25519PublicKey(Arrays.copyOfRange(bytes,0,32)),new Curve25519PrivateKey(Arrays.copyOfRange(bytes,32,64)));
-//		}
-//		DHState client_static_keypair = Noise.createDH("25519");
-//		client_static_keypair.generateKeyPair();
-//		byte[] public_key_bytes = new byte[client_static_keypair.getPublicKeyLength()];
-//		client_static_keypair.getPublicKey(public_key_bytes,0);
-//		byte[] private_key_bytes = new byte[client_static_keypair.getPrivateKeyLength()];
-//		client_static_keypair.getPrivateKey(private_key_bytes,0);
-//		FileOutputStream fos = new FileOutputStream(keypairFile);
-//		fos.write(public_key_bytes);
-//		fos.write(private_key_bytes);
-//		fos.flush();
-//		fos.close();
-//		return new KeyPair(new Curve25519PublicKey(public_key_bytes),new Curve25519PrivateKey(private_key_bytes));
-//	}
+	public String getString(String key){
+		return this.data.getString(key);
+	}
 
-	public static void saveClientStaticKeyPair(String id,KeyPair keypair) throws IOException {
+	public void setString(String key,String value){
+		this.data.put(key,value);
+	}
+
+	public long getLong(String key){
+		return this.data.getLong(key);
+	}
+
+	public void setLong(String key,long value){
+		this.data.put(key,value);
+	}
+
+	public KeyPair getClientStaticKeypair(){
+		byte[] keypairBytes = Base64.decode(this.getString("client_static_keypair"));
+		return new KeyPair(new Curve25519PublicKey(Arrays.copyOfRange(keypairBytes,0,32)),new Curve25519PrivateKey(Arrays.copyOfRange(keypairBytes,32,64)));
+	}
+
+	public void setClientStaticKeypair(KeyPair keypair){
 		byte[] pub = keypair.getPublic().getEncoded();
 		byte[] priv = keypair.getPrivate().getEncoded();
 
 		byte[] keypairBytes = new byte[pub.length+priv.length];
 		System.arraycopy(pub,0,keypairBytes,0,pub.length);
 		System.arraycopy(priv,0,keypairBytes,pub.length,priv.length);
-		Config.saveFile(id,"keypair",keypairBytes);
+		this.setString("client_static_keypair",Base64.encode(keypairBytes));
 	}
 
-	public static KeyPair loadClientStaticKeypair(String id) throws IOException {
-		byte[] content = Config.loadFile(id,"keypair");
-		return new KeyPair(new Curve25519PublicKey(Arrays.copyOfRange(content,0,32)),new Curve25519PrivateKey(Arrays.copyOfRange(content,32,64)));
+	public String getId(){
+		return this.getString("id");
 	}
 
-	public static void saveCountryCode(String id,String cc) throws IOException {
-		Config.saveFile(id,"cc",cc.getBytes());
+	public void setId(String id){
+		this.setString("id",id);
 	}
 
-	public static String loadCountryCode(String id) throws IOException {
-		return new String(Config.loadFile(id,"cc"));
+	public String getCountryCode(){
+		return this.getString("cc");
 	}
 
-	public static void saveInternalNumber(String id,String in) throws IOException {
-		Config.saveFile(id,"in",in.getBytes());
+	public void setCountryCode(String cc){
+		this.setString("cc",cc);
 	}
 
-	public static String loadInternalNumber(String id) throws IOException {
-		return new String(Config.loadFile(id,"in"));
+	public String getInternalNumber(){
+		return this.getString("in");
 	}
 
-	private static void saveFile(String id,String name,byte[] content) throws IOException {
-		File file = new File(id+"_"+name+".txt");
-		FileOutputStream fos = new FileOutputStream(file);
-		fos.write(content);
-		fos.flush();
-		fos.close();
+	public void setInternalNumber(String in){
+		this.setString("in",in);
 	}
 
-	private static byte[] loadFile(String id,String name) throws IOException {
-		File file = new File(id+"_"+name+".txt");
+	public byte[] getEdgeRoutingInfo(){
+		return Base64.decode(this.getString("edge_routing_info"));
+	}
+
+	public void setEdgeRoutingInfo(byte[] edge_routing_info){
+		this.setString("edge_routing_info",Base64.encode(edge_routing_info));
+	}
+
+	public long getLogin(){
+		return this.getLong("login");
+	}
+
+	public void setLogin(long login){
+		this.setLong("login",login);
+	}
+
+	public void save() throws IOException{
+		Config.saveConfig(this.getId(),this);
+	}
+
+	public static Config loadConfig(String id) throws IOException{
+		Config c = new Config();
+		c.data = new JSONObject(new String(Config.loadFile(id)));
+		return c;
+	}
+
+	private static byte[] loadFile(String id) throws IOException{
+		File file = new File("configs/"+id+".conf");
 		FileInputStream fos = new FileInputStream(file);
 		byte[] bytes = new byte[fos.available()];
 		fos.read(bytes);
@@ -162,14 +114,31 @@ public class Config{
 		return bytes;
 	}
 
-	public static KeyPair generateClientStaticKeyPair() throws NoSuchAlgorithmException{
-		DHState client_static_keypair = Noise.createDH("25519");
-		client_static_keypair.generateKeyPair();
-		byte[] public_key_bytes = new byte[client_static_keypair.getPublicKeyLength()];
-		client_static_keypair.getPublicKey(public_key_bytes,0);
-		byte[] private_key_bytes = new byte[client_static_keypair.getPrivateKeyLength()];
-		client_static_keypair.getPrivateKey(private_key_bytes,0);
-		return new KeyPair(new Curve25519PublicKey(public_key_bytes),new Curve25519PrivateKey(private_key_bytes));
+	public static void saveConfig(String id,Config config) throws IOException{
+		Config.saveFile(id,config.data.toString().getBytes());
 	}
+
+	private static void saveFile(String id,byte[] content) throws IOException{
+		File file = new File("configs/"+id+".conf");
+		FileOutputStream fos = new FileOutputStream(file);
+		fos.write(content);
+		fos.flush();
+		fos.close();
+	}
+
+	public static class Tools{
+
+		public static KeyPair generateClientStaticKeyPair() throws NoSuchAlgorithmException{
+			DHState client_static_keypair = Noise.createDH("25519");
+			client_static_keypair.generateKeyPair();
+			byte[] public_key_bytes = new byte[client_static_keypair.getPublicKeyLength()];
+			client_static_keypair.getPublicKey(public_key_bytes,0);
+			byte[] private_key_bytes = new byte[client_static_keypair.getPrivateKeyLength()];
+			client_static_keypair.getPrivateKey(private_key_bytes,0);
+			return new KeyPair(new Curve25519PublicKey(public_key_bytes),new Curve25519PrivateKey(private_key_bytes));
+		}
+
+	}
+
 
 }

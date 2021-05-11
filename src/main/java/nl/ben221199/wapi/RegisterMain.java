@@ -4,10 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
-import java.util.Base64;
 import java.util.Scanner;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -20,7 +18,8 @@ public class RegisterMain{
 	}
 
 	public static void main(String... args) throws IOException, NoSuchAlgorithmException{
-		KeyPair client_static_keypair = Config.generateClientStaticKeyPair();
+		Config config = new Config();
+		config.setClientStaticKeypair(Config.Tools.generateClientStaticKeyPair());
 
 		Scanner s = new Scanner(System.in);
 
@@ -37,15 +36,18 @@ public class RegisterMain{
 			}
 			System.err.println("Id not valid. Should be 20 chars long.");
 		}
+		config.setId(final_id);
 		System.err.println("Enter your country code:");
 		final_cc = s.nextLine();
+		config.setCountryCode(final_cc);
 		System.err.println("Enter your internal number:");
 		final_in = s.nextLine();
+		config.setInternalNumber(final_in);
 
 		String existData = Verification.exist(
 				Constants.Verification.Android.USER_AGENT,
 				true,
-				"authkey="+ URLEncoder.encode(Base64.getEncoder().encodeToString(client_static_keypair.getPublic().getEncoded()),"UTF-8"),
+				"authkey="+ URLEncoder.encode(Base64.encode(config.getClientStaticKeypair().getPublic().getEncoded()),"UTF-8"),
 				"in="+final_in,
 				"cc="+final_cc,
 				"id="+URLEncoder.encode(final_id,"UTF-8"));
@@ -80,7 +82,7 @@ public class RegisterMain{
 		String codeData = Verification.code(
 				Constants.Verification.Android.USER_AGENT,
 				true,
-				"authkey="+ URLEncoder.encode(Base64.getEncoder().encodeToString(client_static_keypair.getPublic().getEncoded()),"UTF-8"),
+				"authkey="+ URLEncoder.encode(Base64.encode(config.getClientStaticKeypair().getPublic().getEncoded()),"UTF-8"),
 				"in="+final_in,
 				"cc="+final_cc,
 				"token="+URLEncoder.encode(token,"UTF-8"),
@@ -112,7 +114,7 @@ public class RegisterMain{
 		String registerData = Verification.register(
 				Constants.Verification.Android.USER_AGENT,
 				true,
-				"authkey="+ URLEncoder.encode(Base64.getEncoder().encodeToString(client_static_keypair.getPublic().getEncoded()),"UTF-8"),
+				"authkey="+ URLEncoder.encode(Base64.encode(config.getClientStaticKeypair().getPublic().getEncoded()),"UTF-8"),
 				"in="+final_in,
 				"cc="+final_cc,
 				"code="+code,
@@ -122,6 +124,8 @@ public class RegisterMain{
 		registerOUT.close();
 		JSONObject registerJSON = new JSONObject(registerData);
 		if(registerJSON.has("status") && "ok".equals(registerJSON.getString("status"))){
+			config.setEdgeRoutingInfo(Base64.decode(registerJSON.getString("edge_routing_info")));
+			config.setLogin(Long.parseLong(registerJSON.getString("login")));
 			System.err.println("The verification process is done.");
 		}else if(registerJSON.has("status") && "fail".equals(registerJSON.getString("status"))){
 			if(existJSON.has("reason") && "blocked".equals(existJSON.getString("reason"))){
@@ -132,9 +136,7 @@ public class RegisterMain{
 			System.err.println("The verification process is not done. Something went wrong. Error: "+registerJSON);
 		}
 
-		Config.saveClientStaticKeyPair(final_id,client_static_keypair);
-		Config.saveCountryCode(final_id,final_cc);
-		Config.saveInternalNumber(final_id,final_in);
+		config.save();
 	}
 
 }

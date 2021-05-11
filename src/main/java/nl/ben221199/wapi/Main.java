@@ -4,11 +4,13 @@ import com.google.protobuf.ByteString;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.security.KeyPair;
 import java.util.Base64;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
+
+import com.whatsapp.proto.WA4Protos;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
@@ -33,16 +35,13 @@ public class Main implements Runnable{
 		System.err.println("Enter your configuration Id:");
 		String id = s.nextLine();
 
-		String countryCode = Config.loadCountryCode(id);
-		String internalNumber = Config.loadInternalNumber(id);
-		KeyPair keyPair = Config.loadClientStaticKeypair(id);
-
+		Config config = Config.loadConfig(id);
 
 		Connection conn = new Connection("e7.whatsapp.net",443)
-//				.setEdgeRoutingInfo(Config.edge_routing_info)
-				.setS(keyPair)
-				.setRS(Config.server_static_key)
-				.setPayload(Config.getConfig(Long.parseLong(countryCode+internalNumber)));
+				.setEdgeRoutingInfo(config.getEdgeRoutingInfo())
+				.setS(config.getClientStaticKeypair())
+//				.setRS(Config.server_static_key)
+				.setPayload(Main.getClientPayload(config));
 		conn.start();
 		FunInputStream in = conn.getInputStream();
 		FunOutputStream out = conn.getOutputStream();
@@ -235,6 +234,38 @@ public class Main implements Runnable{
 				}
 			}
 		},100,4 * 60 * 1000);
+	}
+
+	private static WA4Protos.ClientPayload getClientPayload(Config config){
+		WA4Protos.ClientPayload.UserAgent.AppVersion appVersion = WA4Protos.ClientPayload.UserAgent.AppVersion.newBuilder()
+				.setPrimary(2)
+				.setSecondary(20)
+				.setTertiary(206)
+				.setQuaternary(22)
+				.build();
+
+		WA4Protos.ClientPayload.UserAgent userAgent = WA4Protos.ClientPayload.UserAgent.newBuilder()
+				.setPlatform(WA4Protos.ClientPayload.UserAgent.Platform.ANDROID)
+				//.setMcc("12")
+				//.setMnc("334534")
+				.setOsVersion("1.2.3.4")
+				.setManufacturer("Droid")
+				.setDevice("S5")
+				.setOsBuildNumber("1.0.5")
+				.setPhoneId(UUID.randomUUID().toString())
+				.setLocaleLanguageIso6391("nl")
+				.setLocalCountryIso31661Alpha2("NL")
+				.setAppVersion(appVersion)
+				.build();
+
+		return WA4Protos.ClientPayload.newBuilder()
+				.setUsername(config.getLogin())
+				.setPassive(true)
+				.setPushName("H_____________OI")
+				.setSessionId(5)
+				.setShortConnect(false)
+				.setConnectType(WA4Protos.ClientPayload.ConnectType.WIFI_UNKNOWN)
+				.setUserAgent(userAgent).build();
 	}
 
 }
