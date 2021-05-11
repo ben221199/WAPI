@@ -1,0 +1,23 @@
+
+	adv.protowhatsapp"f
+ADVKeyIndexList
+raw_id (
+	timestamp (
+current_index (
+valid_indexes (B"C
+ADVSignedKeyIndexList
+details (
+account_signature ("I
+ADVDeviceIdentity
+raw_id (
+	timestamp (
+	key_index ("~
+ADVSignedDeviceIdentity
+details (
+account_signature_key (
+account_signature (
+device_signature ("<
+ADVSignedDeviceIdentityHMAC
+details (
+hmac (B
+com.whatsapp.proto

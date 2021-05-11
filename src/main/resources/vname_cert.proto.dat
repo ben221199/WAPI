@@ -1,0 +1,35 @@
+
+vname_cert.protowhatsapp">
+LocalizedName
+
+lg (	
+
+lc (	
+verified_name (	"¹
+VerifiedNameCertificate
+details (
+	signature (
+server_signature (ß
+Details
+serial (
+issuer (	
+expires (
+verified_name (	
+industry (	
+city (	
+country (	0
+localized_names (2.whatsapp.LocalizedName
+aggregator_id	 (
+
+issue_time
+ ("f
+BizAccountPayload5
+
+vname_cert (2!.whatsapp.VerifiedNameCertificate
+biz_acct_link_info ("f
+BizAccountLinkInfo
+whatsapp_biz_acct_fbid (
+whatsapp_acct_number (	
+
+issue_time (B
+com.whatsapp.proto
