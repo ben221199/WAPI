@@ -1,0 +1,39 @@
+package whatsapp;
+
+option java_package = "com.whatsapp.proto";
+
+message LocalizedName{
+  optional string lg = 1;
+  optional string lc = 2;
+  optional string verified_name = 3;
+}
+
+message VerifiedNameCertificate{
+  optional bytes details = 1;
+  optional bytes signature = 2;
+  optional bytes server_signature = 3;
+
+  message Details{
+    optional uint64 serial = 1;
+    optional string issuer = 2;
+    optional uint64 expires = 3;
+    optional string verified_name = 4;
+    optional string industry = 5;
+    optional string city = 6;
+    optional string country = 7;
+    repeated LocalizedName localized_names = 8;
+    optional uint64 aggregator_id = 9;
+    optional uint64 issue_time = 10;
+  }
+}
+
+message BizAccountPayload{
+  optional VerifiedNameCertificate vname_cert = 1;
+  optional bytes biz_acct_link_info = 2;
+}
+
+message BizAccountLinkInfo{
+  optional uint64 whatsapp_biz_acct_fbid = 1;
+  optional string whatsapp_acct_number = 2;
+  optional uint64 issue_time = 3;
+}

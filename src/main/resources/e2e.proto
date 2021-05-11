@@ -1,0 +1,25 @@
+package whatsapp;
+
+option java_package = "com.whatsapp.proto";
+
+import "protocol.proto";
+
+//TODO Finish this .proto file
+
+message Message{}
+
+message ContextInfo{}
+
+message MessageContextInfo{}
+
+message DeviceListMetadata{}
+
+message InteractiveAnnotation{}
+
+message Point{}
+
+message Location{}
+
+message TemplateButton{}
+
+message HydratedTemplateButton{}

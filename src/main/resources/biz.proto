@@ -1,0 +1,93 @@
+package whatsapp;
+
+option java_package = "com.whatsapp.proto";
+
+message HighlyStructuredMessagePack{
+  optional string namespace = 1;
+  optional string lg = 2;
+  optional string lc = 3;
+  optional uint32 version = 4 [deprecated=true];
+  repeated HighlyStructuredMessageTranslation translations = 5;
+  optional Constraints constraints = 6;
+
+  message HighlyStructuredMessageTranslation{
+    optional string translated_text = 2 [deprecated=true];
+    optional uint32 plural_param_no = 3;
+    repeated TranslationPluralException plural_exceptions = 4;
+    optional string name = 5;
+    oneof hsm_element{
+      HighlyStructuredMessageTextElement text_element = 1;
+      HighlyStructuredMessageButtonElement button_element = 6;
+    }
+    optional string template_id = 7;
+
+    message HighlyStructuredMessageTextElement{
+      optional string namespace = 1 [deprecated=true];
+      optional string element_name = 2 [deprecated=true];
+      optional uint32 num_params = 3;
+      optional Type type = 4;
+      optional Format format = 5;
+      optional uint32 buttonIndex = 6 [deprecated=true];
+      optional ButtonField buttonField = 7 [deprecated=true];
+      optional string translated_text = 8;
+
+      enum Type{
+          TITLE = 0;
+          CONTENT = 1;
+          FOOTER = 2;
+          BUTTON = 3;
+      }
+      enum Format{
+          TEXT = 0;
+          IMAGE = 1;
+          DOCUMENT = 2;
+          VIDEO = 3;
+          LOCATION = 4;
+      }
+      enum ButtonField{
+          DISPLAY_TEXT = 0;
+          URL = 1;
+          PHONE_NUMBER = 2;
+      }
+    }
+    message TranslationPluralException{
+      optional PluralQuantityType qty = 1;
+      optional string translated_text = 2;
+
+      enum PluralQuantityType{
+        ZERO = 0;
+        ONE = 1;
+        TWO = 2;
+        FEW = 3;
+        MANY = 4;
+        OTHER = 5;
+      }
+    }
+    message HighlyStructuredMessageButtonElement{
+      oneof button{
+        QuickReplyButton quick_reply_button = 1;
+        URLButton url_button = 2;
+        CallButton call_button = 3;
+      }
+      optional uint32 index = 4;
+
+      message QuickReplyButton{
+        optional string display_text = 1;
+      }
+      message URLButton{
+        optional string display_text = 1;
+        optional string url = 2;
+      }
+      message CallButton{
+        optional string display_text = 1;
+        optional string phone_number = 2;
+      }
+    }
+  }
+  message Constraints{
+    optional uint32 max_body_length = 1;
+    optional uint32 max_header_length = 2;
+    optional uint32 max_button_payload_length = 3;
+    optional uint32 max_button_url_length = 4;
+  }
+}

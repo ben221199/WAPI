@@ -1,0 +1,10 @@
+package whatsapp;
+
+option java_package = "com.whatsapp.proto";
+
+message MessageKey{
+  optional string remote_jid = 1;
+  optional bool from_me = 2;
+  optional string id = 3;
+  optional string participant = 4;
+}

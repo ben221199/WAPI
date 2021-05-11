@@ -1,0 +1,33 @@
+package whatsapp;
+
+option java_package = "com.whatsapp.proto";
+
+message ADVKeyIndexList{
+  optional uint32 raw_id = 1;
+  optional uint64 timestamp = 2;
+  optional uint32 current_index = 3;
+  repeated uint32 valid_indexes = 4 [packed=true];
+}
+
+message ADVSignedKeyIndexList{
+  optional bytes details = 1;
+  optional bytes account_signature = 2;
+}
+
+message ADVDeviceIdentity{
+  optional uint32 raw_id = 1;
+  optional uint64 timestamp = 2;
+  optional uint32 key_index = 3;
+}
+
+message ADVSignedDeviceIdentity{
+  optional bytes details = 1;
+  optional bytes account_signature_key = 2;
+  optional bytes account_signature = 3;
+  optional bytes device_signature = 4;
+}
+
+message ADVSignedDeviceIdentityHMAC{
+  optional bytes details = 1;
+  optional bytes hmac = 2;
+}
