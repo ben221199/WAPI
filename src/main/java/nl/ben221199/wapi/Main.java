@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.KeyPair;
 import java.util.Base64;
-import java.util.Random;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -15,14 +14,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.whispersystems.libsignal.IdentityKeyPair;
 import org.whispersystems.libsignal.InvalidKeyException;
-import org.whispersystems.libsignal.ecc.Curve;
-import org.whispersystems.libsignal.ecc.ECKeyPair;
-import org.whispersystems.libsignal.state.PreKeyBundle;
 import org.whispersystems.libsignal.state.PreKeyRecord;
-import org.whispersystems.libsignal.state.SignalProtocolStore;
 import org.whispersystems.libsignal.state.SignedPreKeyRecord;
 import org.whispersystems.libsignal.util.KeyHelper;
-import org.whispersystems.libsignal.util.Medium;
 
 public class Main implements Runnable{
 
@@ -32,29 +26,6 @@ public class Main implements Runnable{
 	protected Main(FunInputStream in,FunOutputStream out){
 		this.in = in;
 		this.out = out;
-	}
-
-	private static final ECKeyPair aliceSignedPreKey = Curve.generateKeyPair();
-//	private static final ECKeyPair bobSignedPreKey   = Curve.generateKeyPair();
-
-	private static final int aliceSignedPreKeyId = new Random().nextInt(Medium.MAX_VALUE);
-//	private static final int bobSignedPreKeyId   = new Random().nextInt(Medium.MAX_VALUE);
-
-	private static PreKeyBundle createAlicePreKeyBundle(SignalProtocolStore aliceStore) throws InvalidKeyException {
-		ECKeyPair aliceUnsignedPreKey   = Curve.generateKeyPair();
-		int       aliceUnsignedPreKeyId = new Random().nextInt(Medium.MAX_VALUE);
-		byte[]    aliceSignature        = Curve.calculateSignature(aliceStore.getIdentityKeyPair().getPrivateKey(),
-				aliceSignedPreKey.getPublicKey().serialize());
-
-		PreKeyBundle alicePreKeyBundle = new PreKeyBundle(1, 1,
-				aliceUnsignedPreKeyId, aliceUnsignedPreKey.getPublicKey(),
-				aliceSignedPreKeyId, aliceSignedPreKey.getPublicKey(),
-				aliceSignature, aliceStore.getIdentityKeyPair().getPublicKey());
-
-		aliceStore.storeSignedPreKey(aliceSignedPreKeyId, new SignedPreKeyRecord(aliceSignedPreKeyId, System.currentTimeMillis(), aliceSignedPreKey, aliceSignature));
-		aliceStore.storePreKey(aliceUnsignedPreKeyId, new PreKeyRecord(aliceUnsignedPreKeyId, aliceUnsignedPreKey));
-
-		return alicePreKeyBundle;
 	}
 
 	public static void main(String... args) throws IOException{

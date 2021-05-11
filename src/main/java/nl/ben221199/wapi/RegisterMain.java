@@ -57,6 +57,11 @@ public class RegisterMain{
 			System.err.println("This Id is linked to CC & IN. You could use it directly.");
 			return;
 		}else if(existJSON.has("status") && "fail".equals(existJSON.getString("status"))){
+			if(existJSON.has("reason") && "blocked".equals(existJSON.getString("reason"))){
+				System.err.println("THIS NUMBER IS BANNED. ENDING REGISTRATION");
+				System.exit(0);
+				return;
+			}
 			if(existJSON.has("reason") && "bad_param".equals(existJSON.getString("reason"))){
 				System.err.println("The parameter '"+existJSON.getString("param")+"' is not valid.");
 				return;
@@ -88,6 +93,11 @@ public class RegisterMain{
 		if(codeJSON.has("status") && "sent".equals(codeJSON.getString("status"))){
 			System.err.println("The code is sent to the phone number.");
 		}else if(codeJSON.has("status") && "fail".equals(codeJSON.getString("status"))){
+			if(existJSON.has("reason") && "blocked".equals(existJSON.getString("reason"))){
+				System.err.println("THIS NUMBER IS BANNED. ENDING REGISTRATION");
+				System.exit(0);
+				return;
+			}
 			if(existJSON.has("reason") && "bad_param".equals(existJSON.getString("reason"))){
 				System.err.println("The parameter '"+existJSON.getString("param")+"' is not valid.");
 				return;
@@ -114,6 +124,11 @@ public class RegisterMain{
 		if(registerJSON.has("status") && "ok".equals(registerJSON.getString("status"))){
 			System.err.println("The verification process is done.");
 		}else if(registerJSON.has("status") && "fail".equals(registerJSON.getString("status"))){
+			if(existJSON.has("reason") && "blocked".equals(existJSON.getString("reason"))){
+				System.err.println("THIS NUMBER IS BANNED. ENDING REGISTRATION");
+				System.exit(0);
+				return;
+			}
 			System.err.println("The verification process is not done. Something went wrong. Error: "+registerJSON);
 		}
 
