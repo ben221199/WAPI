@@ -24,6 +24,14 @@ public class Config{
 		this.data = new JSONObject();
 	}
 
+	public boolean getBoolean(String key){
+		return this.data.getBoolean(key);
+	}
+
+	public void setBoolean(String key,boolean value){
+		this.data.put(key,value);
+	}
+
 	public String getString(String key){
 		return this.data.getString(key);
 	}
@@ -37,6 +45,14 @@ public class Config{
 	}
 
 	public void setLong(String key,long value){
+		this.data.put(key,value);
+	}
+
+	public int getInt(String key){
+		return this.data.getInt(key);
+	}
+
+	public void setInt(String key,int value){
 		this.data.put(key,value);
 	}
 
@@ -63,6 +79,22 @@ public class Config{
 		this.setString("id",id);
 	}
 
+//	public Object getClientMetrics(){
+//		return this.getInt("client_metrics");
+//	}
+//
+//	public void setClientMetrics(Object client_metrics){
+//		this.setInt("client_metrics",client_metrics);
+//	}
+
+	public int getCode(){
+		return this.getInt("code");
+	}
+
+	public void setCode(int code){
+		this.setInt("code",code);
+	}
+
 	public String getCountryCode(){
 		return this.getString("cc");
 	}
@@ -79,6 +111,78 @@ public class Config{
 		this.setString("in",in);
 	}
 
+	public boolean getEntered(){
+		return this.getBoolean("entered");
+	}
+
+	public void setEntered(boolean entered){
+		this.setBoolean("entered",entered);
+	}
+
+	public String getE2EIdentFull(){
+		return this.getString("e2e_ident_full");
+	}
+
+	public void setE2EIdentFull(String e_ident){
+		this.setString("e2e_ident_full",e_ident);
+	}
+
+	public String getE2ESkeyFull(){
+		return this.getString("e2e_skey_full");
+	}
+
+	public void setE2ESkeyFull(String e_skey){
+		this.setString("e2e_skey_full",e_skey);
+	}
+
+	public int getE2ERegId(){
+		return this.getInt("e_regid");
+	}
+
+	public void setE2ERegId(int e_regid){
+		this.setInt("e_regid",e_regid);
+	}
+
+	public int getE2EKeyType(){
+		return this.getInt("e_keytype");
+	}
+
+	public void setE2EKeyType(int e_keytype){
+		this.setInt("e_keytype",e_keytype);
+	}
+
+	public String getE2EIdent(){
+		return this.getString("e_ident");
+	}
+
+	public void setE2EIdent(String e_ident){
+		this.setString("e_ident",e_ident);
+	}
+
+	public int getE2ESKeyId(){
+		return this.getInt("e_skey_id");
+	}
+
+	public void setE2ESKeyId(int e_skey_id){
+		this.setInt("e_skey_id",e_skey_id);
+	}
+
+	public String getE2ESkeyVal(){
+		return this.getString("e_skey_val");
+	}
+
+	public void setE2ESkeyVal(String e_skey_val){
+		this.setString("e_skey_val",e_skey_val);
+	}
+
+	public String getE2ESkeySig(){
+		return this.getString("e_skey_sig");
+	}
+
+	public void setE2ESkeySig(String e_skey_sig){
+		this.setString("e_skey_sig",e_skey_sig);
+	}
+
 	public byte[] getEdgeRoutingInfo(){
 		return Base64.decode(this.getString("edge_routing_info"));
 	}
@@ -87,12 +191,172 @@ public class Config{
 		this.setString("edge_routing_info",Base64.encode(edge_routing_info));
 	}
 
+	public int getHasAutoVerification(){
+		return this.getInt("hasav");
+	}
+
+	public void setHasAutoVerification(int hasav){
+		this.setInt("hasav",hasav);
+	}
+
+	public boolean getHasInternalRegistrationCode(){
+		return this.getBoolean("hasinrc");
+	}
+
+	public void setHasInternalRegistrationCode(boolean hasinrc){
+		this.setBoolean("hasinrc",hasinrc);
+	}
+
 	public long getLogin(){
 		return this.getLong("login");
 	}
 
 	public void setLogin(long login){
 		this.setLong("login",login);
+	}
+
+	public String getMCC(){
+		return this.getString("mcc");
+	}
+
+	public void setMCC(String mcc){
+		this.setString("mcc",mcc);
+	}
+
+	public String getMethod(){
+		return this.getString("method");
+	}
+
+	public void setMethod(String method){
+		this.setString("method",method);
+	}
+
+	public String getMNC(){
+		return this.getString("mnc");
+	}
+
+	public void setMNC(String mnc){
+		this.setString("mnc",mnc);
+	}
+
+	public int getMistyped(){
+		return this.getInt("mistyped");
+	}
+
+	public void setMistyped(int mistyped){
+		this.setInt("mistyped",mistyped);
+	}
+
+	public String getNetworkOperatorName(){
+		return this.getString("network_operator_name");
+	}
+
+	public void setNetworkOperatorName(String network_operator_name){
+		this.setString("network_operator_name",network_operator_name);
+	}
+
+	public int getNetworkRadioType(){
+		return this.getInt("mistyped");
+	}
+
+	public void setNetworkRadioType(int mistyped){
+		this.setInt("mistyped",mistyped);
+	}
+
+//	public Object getOfflineAB(){
+//		return this.getInt("offline_ab");
+//	}
+//
+//	public void setOfflineAB(Object offline_ab){
+//		this.setInt("offline_ab",offline_ab);
+//	}
+
+	public int getProcessId(){
+		return this.getInt("pid");
+	}
+
+	public void setProcessId(int pid){
+		this.setInt("pid",pid);
+	}
+
+	public boolean getReadPhonePermissionGranted(){
+		return this.getBoolean("read_phone_permission_granted");
+	}
+
+	public void setReadPhonePermissionGranted(boolean read_phone_permission_granted){
+		this.setBoolean("read_phone_permission_granted",read_phone_permission_granted);
+	}
+
+	public String getReason(){
+		return this.getString("reason");
+	}
+
+	public void setReason(String reason){
+		this.setString("reason",reason);
+	}
+
+	public int getReleaseChannel(){
+		return this.getInt("rc");
+	}
+
+	public void setReleaseChannel(int rc){
+		this.setInt("rc",rc);
+	}
+
+	public String getSIMMCC(){
+		return this.getString("sim_mcc");
+	}
+
+	public void setSIMMCC(String sim_mcc){
+		this.setString("sim_mcc",sim_mcc);
+	}
+
+	public String getSIMMNC(){
+		return this.getString("sim_mnc");
+	}
+
+	public void setSIMMNC(String sim_mnc){
+		this.setString("sim_mnc",sim_mnc);
+	}
+
+	public int getSIMNumber(){
+		return this.getInt("simnum");
+	}
+
+	public void setSIMNumber(int simnum){
+		this.setInt("simnum",simnum);
+	}
+
+	public String getSIMOperatorName(){
+		return this.getString("sim_operator_name");
+	}
+
+	public void setSIMOperatorName(String sim_operator_name){
+		this.setString("sim_operator_name",sim_operator_name);
+	}
+
+	public int getSIMState(){
+		return this.getInt("sim_state");
+	}
+
+	public void setSIMState(int sim_state){
+		this.setInt("sim_state",sim_state);
+	}
+
+	public String getToken(){
+		return this.getString("token");
+	}
+
+	public void setToken(String token){
+		this.setString("token",token);
+	}
+
+	public String getVName(){
+		return this.getString("vname");
+	}
+
+	public void setVName(String vname){
+		this.setString("vname",vname);
 	}
 
 	public void save() throws IOException{

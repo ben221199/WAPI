@@ -1,13 +1,25 @@
 package nl.ben221199.wapi;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
+
+import com.google.protobuf.ByteString;
+import com.whatsapp.proto.WA4Protos;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.json.JSONObject;
+import org.whispersystems.libsignal.IdentityKeyPair;
+import org.whispersystems.libsignal.InvalidKeyException;
+import org.whispersystems.libsignal.state.SignedPreKeyRecord;
+import org.whispersystems.libsignal.util.KeyHelper;
 
 public class RegisterMain{
 
@@ -15,9 +27,8 @@ public class RegisterMain{
 		Security.addProvider(new BouncyCastleProvider());
 	}
 
-	public static void main(String... args) throws IOException, NoSuchAlgorithmException{
+	public static void main(String... args) throws IOException, NoSuchAlgorithmException, InvalidKeyException {
 		Config config = new Config();
-		config.setClientStaticKeypair(Config.Tools.generateClientStaticKeyPair());
 
 		Scanner s = new Scanner(System.in);
 
@@ -42,12 +53,9 @@ public class RegisterMain{
 		final_in = s.nextLine();
 		config.setInternalNumber(final_in);
 
-		String[] existParams = new String[]{
-				"authkey="+ URLEncoder.encode(Base64.encode(config.getClientStaticKeypair().getPublic().getEncoded()),"UTF-8"),
-				"in="+final_in,
-				"cc="+final_cc,
-				"id="+URLEncoder.encode(final_id,"UTF-8"),
-		};
+		RegisterMain.initConfig(config);
+
+		String[] existParams = RegisterMain.getExistParams(config);
 		String existData = Verification.exist(
 				Constants.Verification.Android.USER_AGENT,
 				true,
@@ -73,20 +81,9 @@ public class RegisterMain{
 
 		System.err.println("Enter your method (sms/voice):");
 		String method = s.nextLine();
+		config.setMethod(method);
 
-		String token = Verification.calculateToken(final_in);
-		if(token==null){
-			System.err.println("Somehow the token is null.");
-			return;
-		}
-		String[] codeParams = new String[]{
-				"authkey="+ URLEncoder.encode(Base64.encode(config.getClientStaticKeypair().getPublic().getEncoded()),"UTF-8"),
-				"in="+final_in,
-				"cc="+final_cc,
-				"token="+URLEncoder.encode(token,"UTF-8"),
-				"id="+URLEncoder.encode(final_id,"UTF-8"),
-				"method="+method,
-		};
+		String[] codeParams = RegisterMain.getCodeParams(config);
 		String codeData = Verification.code(
 				Constants.Verification.Android.USER_AGENT,
 				true,
@@ -111,15 +108,10 @@ public class RegisterMain{
 
 		System.err.println("Enter your received code:");
 		int code = s.nextInt();
+		config.setCode(code);
 		s.nextLine();
 
-		String[] registerParams = new String[]{
-				"authkey="+ URLEncoder.encode(Base64.encode(config.getClientStaticKeypair().getPublic().getEncoded()),"UTF-8"),
-				"in="+final_in,
-				"cc="+final_cc,
-				"code="+code,
-				"id="+URLEncoder.encode(final_id,"UTF-8"),
-		};
+		String[] registerParams = RegisterMain.getRegisterParams(config);
 		String registerData = Verification.register(
 				Constants.Verification.Android.USER_AGENT,
 				true,
@@ -141,6 +133,166 @@ public class RegisterMain{
 		}
 
 		config.save();
+	}
+
+	private static void initConfig(Config config) throws NoSuchAlgorithmException, InvalidKeyException {
+		config.setClientStaticKeypair(Config.Tools.generateClientStaticKeyPair());
+
+		/*Optionals*/
+		config.setReleaseChannel(WA4Protos.ClientPayload.UserAgent.ReleaseChannel.RELEASE_VALUE);
+		config.setSIMNumber(1);
+		config.setHasInternalRegistrationCode(true);
+		config.setProcessId(123);
+		config.setMistyped(0);
+		config.setNetworkRadioType(1);
+//		config.setClientMetrics(null);
+
+		/*E2E*/
+		int e_regid = KeyHelper.generateRegistrationId(false);
+		IdentityKeyPair e_ident = KeyHelper.generateIdentityKeyPair();
+		SignedPreKeyRecord e_skey = KeyHelper.generateSignedPreKey(e_ident,0);
+		config.setE2EIdentFull(Base64.encode(e_ident.serialize()));
+		config.setE2ESkeyFull(Base64.encode(e_skey.serialize()));
+
+		config.setE2ERegId(e_regid);
+		config.setE2EKeyType(0x05);
+		config.setE2EIdent(Base64.encode(ByteString.copyFrom(e_ident.getPublicKey().serialize()).substring(1).toByteArray()));
+		System.err.println("A => "+e_skey.getId());
+		config.setE2ESKeyId(e_skey.getId());
+		config.setE2ESkeyVal(Base64.encode(ByteString.copyFrom(e_skey.getKeyPair().getPublicKey().serialize()).substring(1).toByteArray()));
+		config.setE2ESkeySig(Base64.encode(e_skey.getSignature()));
+
+		/*EXIST*/
+		config.setNetworkOperatorName("Android");
+		config.setReadPhonePermissionGranted(true);
+		config.setToken(Verification.calculateToken(config.getInternalNumber()));
+		config.setSIMOperatorName("Android");
+//		config.setOfflineAB(null);
+		config.setSIMState(0);
+
+		/*CODE*/
+		config.setSIMMNC("000");
+		config.setSIMMCC("000");
+		config.setMNC("000");
+		config.setReason("");
+		config.setMCC("000");
+		config.setHasAutoVerification(2);
+
+		/*REGISTER*/
+		config.setEntered(true);
+		config.setNetworkOperatorName("Android");
+		config.setSIMMNC("000");
+		config.setVName(null);
+		config.setSIMMCC("000");
+		config.setMNC("000");
+		config.setSIMOperatorName("Android");
+		config.setMCC("000");
+	}
+
+	private static String[] getExistParams(Config config) throws UnsupportedEncodingException{
+		List<String> params = new ArrayList<>();
+
+		RegisterMain.addRequiredBasicParams(config,params);
+		RegisterMain.addOptionalBasicParams(config,params);
+		RegisterMain.addE2EParams(config,params);
+		RegisterMain.addOptionalExistParams(config,params);
+
+		return params.toArray(new String[0]);
+	}
+
+	private static String[] getCodeParams(Config config) throws UnsupportedEncodingException{
+		String token = Verification.calculateToken(config.getInternalNumber());
+		if(token==null){
+			token = "<NULL>";
+			System.err.println("Somehow the token is null.");
+		}
+
+		List<String> params = new ArrayList<>();
+
+		RegisterMain.addRequiredBasicParams(config,params);
+		RegisterMain.addOptionalBasicParams(config,params);
+		RegisterMain.addE2EParams(config,params);
+		RegisterMain.addOptionalCodeParams(config,params);
+		params.add("token="+URLEncoder.encode(token,"UTF-8"));
+		params.add("method="+config.getMethod());
+
+		return params.toArray(new String[0]);
+	}
+
+	private static String[] getRegisterParams(Config config) throws UnsupportedEncodingException{
+		List<String> params = new ArrayList<>();
+
+		RegisterMain.addRequiredBasicParams(config,params);
+		RegisterMain.addOptionalBasicParams(config,params);
+		RegisterMain.addE2EParams(config,params);
+		RegisterMain.addOptionalRegisterParams(config,params);
+		params.add("code="+config.getCode());
+
+		return params.toArray(new String[0]);
+	}
+
+	private static void addRequiredBasicParams(Config config,List<String> params) throws UnsupportedEncodingException{
+		params.add("authkey="+Base64.convertToURLSafe(Base64.encode(config.getClientStaticKeypair().getPublic().getEncoded())));
+		params.add("in="+config.getInternalNumber());
+		params.add("cc="+config.getCountryCode());
+		params.add("id="+URLEncoder.encode(config.getId(),"UTF-8"));
+	}
+
+
+	private static void addOptionalBasicParams(Config config,List<String> params){
+		params.add("rc="+config.getReleaseChannel());
+		params.add("simnum="+config.getSIMNumber());
+		params.add("hasinrc="+(config.getHasInternalRegistrationCode()?1:0));
+		params.add("mistyped="+config.getMistyped());
+		params.add("pid="+config.getProcessId());
+		params.add("network_radio_type="+config.getNetworkRadioType());
+//		params.add("client_metrics="+config.getClientMetrics());
+	}
+
+	private static void addE2EParams(Config config,List<String> params){
+		String e_regid = Base64.encode(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(config.getE2ERegId()).array());
+		params.add("e_regid="+Base64.convertToURLSafe(e_regid).replaceAll("=",""));
+
+		String e_keytype = Base64.encode(ByteBuffer.allocate(1).order(ByteOrder.BIG_ENDIAN).put((byte) config.getE2EKeyType()).array());
+		params.add("e_keytype="+Base64.convertToURLSafe(e_keytype).replaceAll("=",""));
+		params.add("e_ident="+Base64.convertToURLSafe(config.getE2EIdent()).replaceAll("=",""));
+
+		String e_skey_id = Base64.encode(ByteBuffer.allocate(3).order(ByteOrder.BIG_ENDIAN).putShort(1,(short) config.getE2ESKeyId()).array());
+		params.add("e_skey_id="+Base64.convertToURLSafe(e_skey_id).replaceAll("=",""));
+
+		params.add("e_skey_val="+Base64.convertToURLSafe(config.getE2ESkeyVal()).replaceAll("=",""));
+		params.add("e_skey_sig="+Base64.convertToURLSafe(config.getE2ESkeySig()).replaceAll("=",""));
+	}
+
+	private static void addOptionalExistParams(Config config,List<String> params){
+		params.add("network_operator_name="+config.getNetworkOperatorName());
+		params.add("read_phone_permission_granted="+(config.getReadPhonePermissionGranted()?1:0));
+		params.add("token="+Base64.encode(config.getToken().getBytes()));
+		params.add("sim_operator_name="+config.getSIMOperatorName());
+//		params.add("offline_ab="+config.getOfflineAB());
+		params.add("sim_state="+config.getSIMState());
+	}
+
+	private static void addOptionalCodeParams(Config config,List<String> params){
+		params.add("sim_mnc="+config.getSIMMNC());
+		params.add("sim_mcc="+config.getSIMMCC());
+		params.add("mnc="+config.getMNC());
+		params.add("reason="+config.getReason());
+		params.add("mcc="+config.getMCC());
+		params.add("hasav="+config.getHasAutoVerification());
+	}
+
+	private static void addOptionalRegisterParams(Config config,List<String> params){
+		params.add("entered="+(config.getEntered()?1:0));
+		params.add("network_operator_name="+config.getNetworkOperatorName());
+		params.add("sim_mnc="+config.getSIMMNC());
+//		if(config.getVName()!=null){
+//			params.add("vname="+Base64.encode(config.getVName().getBytes()));
+//		}
+		params.add("sim_mcc="+config.getSIMMCC());
+		params.add("mnc="+config.getMNC());
+		params.add("sim_operator_name="+config.getSIMOperatorName());
+		params.add("mcc="+config.getMCC());
 	}
 
 }

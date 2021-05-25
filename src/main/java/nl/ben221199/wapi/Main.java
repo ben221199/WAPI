@@ -245,9 +245,10 @@ public class Main implements Runnable{
 				.build();
 
 		WA4Protos.ClientPayload.UserAgent userAgent = WA4Protos.ClientPayload.UserAgent.newBuilder()
+				.setReleaseChannel(WA4Protos.ClientPayload.UserAgent.ReleaseChannel.forNumber(config.getReleaseChannel()))
 				.setPlatform(WA4Protos.ClientPayload.UserAgent.Platform.ANDROID)
-				//.setMcc("12")
-				//.setMnc("334534")
+				.setMcc(config.getMCC())
+				.setMnc(config.getMNC())
 				.setOsVersion("1.2.3.4")
 				.setManufacturer("Droid")
 				.setDevice("S5")
