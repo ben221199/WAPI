@@ -24,6 +24,14 @@ public class Config{
 		this.data = new JSONObject();
 	}
 
+	public JSONObject getObject(String key){
+		return this.data.getJSONObject(key);
+	}
+
+	public void setObject(String key,JSONObject value){
+		this.data.put(key,value);
+	}
+
 	public boolean getBoolean(String key){
 		return this.data.getBoolean(key);
 	}
@@ -79,13 +87,13 @@ public class Config{
 		this.setString("id",id);
 	}
 
-//	public Object getClientMetrics(){
-//		return this.getInt("client_metrics");
-//	}
-//
-//	public void setClientMetrics(Object client_metrics){
-//		this.setInt("client_metrics",client_metrics);
-//	}
+	public JSONObject getClientMetrics(){
+		return this.getObject("client_metrics");
+	}
+
+	public void setClientMetrics(JSONObject client_metrics){
+		this.setObject("client_metrics",client_metrics);
+	}
 
 	public int getCode(){
 		return this.getInt("code");
@@ -111,12 +119,12 @@ public class Config{
 		this.setString("in",in);
 	}
 
-	public boolean getEntered(){
-		return this.getBoolean("entered");
+	public int getEntered(){
+		return this.getInt("entered");
 	}
 
-	public void setEntered(boolean entered){
-		this.setBoolean("entered",entered);
+	public void setEntered(int entered){
+		this.setInt("entered",entered);
 	}
 
 	public String getE2EIdentFull(){
@@ -191,6 +199,22 @@ public class Config{
 		this.setString("edge_routing_info",Base64.encode(edge_routing_info));
 	}
 
+	public void setExpId(String expid){
+		this.setString("expid",expid);
+	}
+
+	public String getExpId(){
+		return this.getString("expid");
+	}
+
+	public void setFDId(String fdid){
+		this.setString("fdid",fdid);
+	}
+
+	public String getFDId(){
+		return this.getString("fdid");
+	}
+
 	public int getHasAutoVerification(){
 		return this.getInt("hasav");
 	}
@@ -205,6 +229,22 @@ public class Config{
 
 	public void setHasInternalRegistrationCode(boolean hasinrc){
 		this.setBoolean("hasinrc",hasinrc);
+	}
+
+	public String getLanguage(){
+		return this.getString("lg");
+	}
+
+	public void setLanguage(String lg){
+		this.setString("lg",lg);
+	}
+
+	public String getLanguageCountry(){
+		return this.getString("lc");
+	}
+
+	public void setLanguageCountry(String lc){
+		this.setString("lc",lc);
 	}
 
 	public long getLogin(){
@@ -263,13 +303,13 @@ public class Config{
 		this.setInt("mistyped",mistyped);
 	}
 
-//	public Object getOfflineAB(){
-//		return this.getInt("offline_ab");
-//	}
-//
-//	public void setOfflineAB(Object offline_ab){
-//		this.setInt("offline_ab",offline_ab);
-//	}
+	public JSONObject getOfflineAB(){
+		return this.getObject("offline_ab");
+	}
+
+	public void setOfflineAB(JSONObject offline_ab){
+		this.setObject("offline_ab",offline_ab);
+	}
 
 	public int getProcessId(){
 		return this.getInt("pid");
@@ -359,6 +399,18 @@ public class Config{
 		this.setString("vname",vname);
 	}
 
+	public boolean has(String key){
+		return this.data.has(key);
+	}
+
+	public boolean getPrekeysSent(){
+		return this.getBoolean("__prekeys_sent");
+	}
+
+	public void setPrekeysSent(boolean __prekeys_sent){
+		this.setBoolean("__prekeys_sent",__prekeys_sent);
+	}
+
 	public void save() throws IOException{
 		Config.saveConfig(this.getId(),this);
 	}
@@ -373,8 +425,9 @@ public class Config{
 		File file = new File("configs/"+id+".conf");
 		FileInputStream fos = new FileInputStream(file);
 		byte[] bytes = new byte[fos.available()];
-		fos.read(bytes);
-		fos.close();
+		if(fos.read(bytes)>-1){
+			fos.close();
+		}
 		return bytes;
 	}
 

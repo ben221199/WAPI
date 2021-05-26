@@ -10,8 +10,10 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.UUID;
 
 import com.google.protobuf.ByteString;
+import com.whatsapp.proto.VNameCertProtos;
 import com.whatsapp.proto.WA4Protos;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -143,9 +145,15 @@ public class RegisterMain{
 		config.setSIMNumber(1);
 		config.setHasInternalRegistrationCode(true);
 		config.setProcessId(123);
-		config.setMistyped(0);
+		config.setMistyped(6);
 		config.setNetworkRadioType(1);
-//		config.setClientMetrics(null);
+		config.setClientMetrics(new JSONObject().put("attempts",1));
+
+		UUID expid = UUID.randomUUID();
+		config.setLanguage("en");
+		config.setLanguageCountry("US");
+		config.setFDId(UUID.randomUUID().toString());
+		config.setExpId(Base64.encode(ByteBuffer.allocate(16).putLong(expid.getMostSignificantBits()).putLong(expid.getLeastSignificantBits()).array()));
 
 		/*E2E*/
 		int e_regid = KeyHelper.generateRegistrationId(false);
@@ -167,7 +175,7 @@ public class RegisterMain{
 		config.setReadPhonePermissionGranted(true);
 		config.setToken(Verification.calculateToken(config.getInternalNumber()));
 		config.setSIMOperatorName("Android");
-//		config.setOfflineAB(null);
+		config.setOfflineAB(new JSONObject());
 		config.setSIMState(0);
 
 		/*CODE*/
@@ -179,10 +187,12 @@ public class RegisterMain{
 		config.setHasAutoVerification(2);
 
 		/*REGISTER*/
-		config.setEntered(true);
+		VNameCertProtos.VerifiedNameCertificate.Details details = VNameCertProtos.VerifiedNameCertificate.Details.newBuilder().build();
+		VNameCertProtos.VerifiedNameCertificate vnameCert = VNameCertProtos.VerifiedNameCertificate.newBuilder().setDetails(details.toByteString()).setSignature(ByteString.EMPTY).build();
+		config.setEntered(2);
 		config.setNetworkOperatorName("Android");
 		config.setSIMMNC("000");
-		config.setVName(null);
+		config.setVName(Base64.encode(vnameCert.toByteArray()));
 		config.setSIMMCC("000");
 		config.setMNC("000");
 		config.setSIMOperatorName("Android");
@@ -239,14 +249,19 @@ public class RegisterMain{
 	}
 
 
-	private static void addOptionalBasicParams(Config config,List<String> params){
+	private static void addOptionalBasicParams(Config config,List<String> params) throws UnsupportedEncodingException{
 		params.add("rc="+config.getReleaseChannel());
 		params.add("simnum="+config.getSIMNumber());
 		params.add("hasinrc="+(config.getHasInternalRegistrationCode()?1:0));
 		params.add("mistyped="+config.getMistyped());
 		params.add("pid="+config.getProcessId());
 		params.add("network_radio_type="+config.getNetworkRadioType());
-//		params.add("client_metrics="+config.getClientMetrics());
+		params.add("client_metrics="+URLEncoder.encode(config.getClientMetrics().toString(),"UTF-8"));
+
+		params.add("lg="+config.getLanguage());
+		params.add("lc="+config.getLanguageCountry());
+		params.add("expid="+Base64.convertToURLSafe(config.getExpId()));
+		params.add("fdid="+config.getFDId());
 	}
 
 	private static void addE2EParams(Config config,List<String> params){
@@ -264,12 +279,12 @@ public class RegisterMain{
 		params.add("e_skey_sig="+Base64.convertToURLSafe(config.getE2ESkeySig()).replaceAll("=",""));
 	}
 
-	private static void addOptionalExistParams(Config config,List<String> params){
+	private static void addOptionalExistParams(Config config,List<String> params) throws UnsupportedEncodingException{
 		params.add("network_operator_name="+config.getNetworkOperatorName());
 		params.add("read_phone_permission_granted="+(config.getReadPhonePermissionGranted()?1:0));
 		params.add("token="+Base64.encode(config.getToken().getBytes()));
 		params.add("sim_operator_name="+config.getSIMOperatorName());
-//		params.add("offline_ab="+config.getOfflineAB());
+		params.add("offline_ab="+URLEncoder.encode(config.getOfflineAB().toString(),"UTF-8"));
 		params.add("sim_state="+config.getSIMState());
 	}
 
@@ -283,12 +298,12 @@ public class RegisterMain{
 	}
 
 	private static void addOptionalRegisterParams(Config config,List<String> params){
-		params.add("entered="+(config.getEntered()?1:0));
+		params.add("entered="+config.getEntered());
 		params.add("network_operator_name="+config.getNetworkOperatorName());
 		params.add("sim_mnc="+config.getSIMMNC());
-//		if(config.getVName()!=null){
-//			params.add("vname="+Base64.encode(config.getVName().getBytes()));
-//		}
+		if(config.has("vname")){
+			params.add("vname="+Base64.convertToURLSafe(config.getVName().replaceAll("=","")));
+		}
 		params.add("sim_mcc="+config.getSIMMCC());
 		params.add("mnc="+config.getMNC());
 		params.add("sim_operator_name="+config.getSIMOperatorName());

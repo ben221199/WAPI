@@ -2,9 +2,12 @@ package nl.ben221199.wapi;
 
 import com.google.protobuf.ByteString;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Base64;
+import java.nio.ByteOrder;
+import java.util.List;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -14,18 +17,23 @@ import com.whatsapp.proto.WA4Protos;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
+import org.whispersystems.libsignal.IdentityKey;
 import org.whispersystems.libsignal.IdentityKeyPair;
 import org.whispersystems.libsignal.InvalidKeyException;
 import org.whispersystems.libsignal.state.PreKeyRecord;
+import org.whispersystems.libsignal.state.PreKeyStore;
 import org.whispersystems.libsignal.state.SignedPreKeyRecord;
+import org.whispersystems.libsignal.state.impl.InMemoryPreKeyStore;
 import org.whispersystems.libsignal.util.KeyHelper;
 
 public class Main implements Runnable{
 
+	private Config config;
 	private FunInputStream in;
 	private FunOutputStream out;
 
-	protected Main(FunInputStream in,FunOutputStream out){
+	protected Main(Config config,FunInputStream in,FunOutputStream out){
+		this.config = config;
 		this.in = in;
 		this.out = out;
 	}
@@ -46,7 +54,7 @@ public class Main implements Runnable{
 		FunInputStream in = conn.getInputStream();
 		FunOutputStream out = conn.getOutputStream();
 
-		new Thread(new Main(in,out)).start();
+		new Thread(new Main(config,in,out)).start();
 	}
 
 	@Override
@@ -87,7 +95,7 @@ public class Main implements Runnable{
 		System.err.println("EXIT");
 	}
 
-	private void handleFailure(String xml,Element elem){
+	private void handleFailure(String xml,Element elem) throws IOException {
 		System.err.println("Failure: "+xml);
 	}
 
@@ -106,6 +114,16 @@ public class Main implements Runnable{
 	private void handleSuccess(String xml,Element elem) throws IOException{
 		System.err.println("<<[] Success: "+xml);
 
+		boolean sentKeys = false;
+		if(this.config.has("__prekeys_sent")){
+			sentKeys = this.config.getPrekeysSent();
+		}
+		if(!sentKeys){
+			this.setKeys();
+		}
+
+		this.setProfilePicture();
+
 		this._getCDN();
 		this._doPing();
 
@@ -119,7 +137,6 @@ public class Main implements Runnable{
 //		this.out.writeXML(key);
 //		this.out.flush();
 
-//		this.setKeys();
 
 		String xml3 = "<iq id=\"4\" xmlns=\"encrypt\" type=\"get\" to=\"s.whatsapp.net\"><key><user jid=\"31612322954@s.whatsapp.net\"/></key></iq>";
 		System.err.println("[]>> "+FunXMPP.decode(FunXMPP.encode(xml3)));
@@ -139,34 +156,50 @@ public class Main implements Runnable{
 //		this.out.flush();
 	}
 
-	private void setKeys() throws IOException{
-		IdentityKeyPair identityKeyPair = KeyHelper.generateIdentityKeyPair();
+	private void setProfilePicture() throws IOException{
+		String xml = "";
 
-		SignedPreKeyRecord signedPreKey = null;
-		try {
-			signedPreKey = KeyHelper.generateSignedPreKey(identityKeyPair, 5);
-		} catch (InvalidKeyException e) {
-			e.printStackTrace();
-		}
+		byte[] imageData = new FileInputStream(new File("C:\\Users\\Ben\\Pictures\\WAPP_IMAGE.jpg")).readAllBytes();
+		byte[] previewData = new FileInputStream(new File("C:\\Users\\Ben\\Pictures\\WAPP_PREVIEW.jpg")).readAllBytes();
+
+		xml += "<iq type=\"set\" id=\"123-img\" xmlns=\"w:profile:picture\" to=\"79066233987@s.whatsapp.net\">";
+		xml += "<picture type=\"image\" id=\""+System.currentTimeMillis()+"\">"+Base64.encode(imageData)+"</picture>";
+		xml += "<picture type=\"preview\">"+Base64.encode(previewData)+"</picture>";
+		xml += "</iq>";
+
+		System.err.println("[]>> "+FunXMPP.decode(FunXMPP.encode(xml)));
+		this.out.writeXML(xml);
+		this.out.flush();
+	}
+
+	private void setKeys() throws IOException {
+//		IdentityKeyPair identityKeyPair = new IdentityKeyPair(nl.ben221199.wapi.Base64.decode(this.config.getE2EIdentFull()));
+		List<PreKeyRecord> prekeys = KeyHelper.generatePreKeys(0,100);
 
 		ByteString.Output o = ByteString.newOutput();
 		o.write("<iq id=\"2\" xmlns=\"encrypt\" type=\"get\" to=\"s.whatsapp.net\">".getBytes());
+
 		o.write("<list>".getBytes());
-		for(PreKeyRecord pkr : KeyHelper.generatePreKeys(0,100)){
-			String id = byteEncode(ByteBuffer.allocate(4).putInt(pkr.getId()).array());
-			String value = byteEncode(pkr.getKeyPair().getPublicKey().serialize());
+		for(PreKeyRecord pkr : prekeys){
+			String id = Base64.encode(ByteBuffer.allocate(4).putInt(pkr.getId()).array());
+			String value = Base64.encode(pkr.getKeyPair().getPublicKey().serialize());
 			o.write(("<key><id>"+id+"</id><value>"+value+"</value></key>").getBytes());
 		}
 		o.write("</list>".getBytes());
-		o.write(("<identity>"+byteEncode(identityKeyPair.getPublicKey().serialize())+"</identity>").getBytes());
-		o.write(("<registration>"+byteEncode(ByteBuffer.allocate(4).putInt(KeyHelper.generateRegistrationId(true)).array())+"</registration>").getBytes());
-		o.write(("<type>"+byteEncode(new byte[]{0x05})+"</type>").getBytes());
-//		o.write("<skey>".getBytes());
-//		o.write(("<id>"+byteEncode(Arrays.copyOfRange(ByteBuffer.allocate(4).putInt(signedPreKey==null?0:signedPreKey.getId()).array(),1,4))+"</id>").getBytes());
-//		byte[] value = signedPreKey==null?new byte[0]:signedPreKey.getKeyPair().getPublicKey().serialize();
-//		o.write(("<value>"+byteEncode(Arrays.copyOfRange(value,1,value.length))+"</value>").getBytes());
-//		o.write(("<signature>"+byteEncode(signedPreKey==null?new byte[0]:signedPreKey.getSignature())+"</signature>").getBytes());
-//		o.write("</skey>".getBytes());
+
+		o.write(("<identity>"+this.config.getE2EIdent()+"</identity>").getBytes());
+		String e_regid = Base64.encode(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(config.getE2ERegId()).array());
+		o.write(("<registration>"+e_regid+"</registration>").getBytes());
+		String e_keytype = Base64.encode(ByteBuffer.allocate(1).order(ByteOrder.BIG_ENDIAN).put((byte) config.getE2EKeyType()).array());
+		o.write(("<type>"+e_keytype+"</type>").getBytes());
+
+		o.write("<skey>".getBytes());
+		String e_skey_id = Base64.encode(ByteBuffer.allocate(3).order(ByteOrder.BIG_ENDIAN).putShort(1,(short) config.getE2ESKeyId()).array());
+		o.write(("<id>"+e_skey_id+"</id>").getBytes());
+		o.write(("<value>"+this.config.getE2ESkeyVal()+"</value>").getBytes());
+		o.write(("<signature>"+this.config.getE2ESkeySig()+"</signature>").getBytes());
+		o.write("</skey>".getBytes());
+
 		o.write("</iq>".getBytes());
 
 //		System.err.println();
@@ -184,22 +217,12 @@ public class Main implements Runnable{
 //		System.err.println("> LMX: "+xml2);
 //		System.err.println();
 
-		System.err.println("[]>> "+FunXMPP.decode(FunXMPP.encode(xml)));
+//		System.err.println("[]>> "+FunXMPP.decode(FunXMPP.encode(xml)));
 		this.out.writeXML(xml);
 		this.out.flush();
-	}
 
-	private String byteEncode(byte[] ba){
-		return Base64.getEncoder().encodeToString(ba);
-//		StringBuilder sb = new StringBuilder();
-//		for(byte b : ba){
-//			char c = (char) b;
-//			if(c==0){
-//				sb.append("&#0;");
-//				continue;
-//			}
-//		}
-//		return sb.toString();
+		this.config.setPrekeysSent(true);
+		this.config.save();
 	}
 
 	private void createGroup() throws IOException{
@@ -249,13 +272,13 @@ public class Main implements Runnable{
 				.setPlatform(WA4Protos.ClientPayload.UserAgent.Platform.ANDROID)
 				.setMcc(config.getMCC())
 				.setMnc(config.getMNC())
-				.setOsVersion("1.2.3.4")
-				.setManufacturer("Droid")
-				.setDevice("S5")
-				.setOsBuildNumber("1.0.5")
-				.setPhoneId(UUID.randomUUID().toString())
-				.setLocaleLanguageIso6391("nl")
-				.setLocalCountryIso31661Alpha2("NL")
+				.setOsVersion("8.0.0")
+				.setManufacturer("samsung")
+				.setDevice("star2lte")
+				.setOsBuildNumber("star2ltexx-user 8.0.0 R16NW G965FXXU1ARCC release-keys")
+				.setPhoneId(config.getFDId())
+				.setLocaleLanguageIso6391(config.getLanguage())
+				.setLocalCountryIso31661Alpha2(config.getLanguageCountry())
 				.setAppVersion(appVersion)
 				.build();
 
@@ -263,7 +286,7 @@ public class Main implements Runnable{
 				.setUsername(config.getLogin())
 				.setPassive(true)
 				.setPushName("H_____________OI")
-				.setSessionId(5)
+//				.setSessionId(5)
 				.setShortConnect(false)
 				.setConnectType(WA4Protos.ClientPayload.ConnectType.WIFI_UNKNOWN)
 				.setUserAgent(userAgent).build();

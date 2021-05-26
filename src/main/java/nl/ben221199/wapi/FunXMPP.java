@@ -9,7 +9,6 @@ import java.util.Base64;
 import java.util.List;
 
 import nl.ben221199.wapi.protocol.WA02;
-import nl.ben221199.wapi.protocol.WA40;
 import nl.ben221199.wapi.protocol.WA41;
 
 import org.jsoup.Jsoup;
@@ -108,17 +107,17 @@ public class FunXMPP{
 					return new PackedHex(PackedHex.unpack(startByte,buf));
 				}
 				case 0xFC:{
-					byte[] buf = new byte[bb.get()];
+					byte[] buf = new byte[bb.get() & 0xFF];
 					bb.get(buf);
 					return new Int8LengthArrayString(buf);
 				}
 				case 0xFD:{
-					byte[] buf = new byte[((bb.get() & 0xF) << 16) | (bb.get() << 8) | bb.get()];
+					byte[] buf = new byte[(((bb.get() & 0xF) << 16) | ((bb.get() & 0xFF) << 8) | (bb.get() & 0xFF)) & 0b11111111111111111111];
 					bb.get(buf);
 					return new Int20LengthArrayString(buf);
 				}
 				case 0xFE:{
-					byte[] buf = new byte[(bb.get() & 0x7F << 24) | (bb.get() << 16) | bb.get() << 8 | bb.get()];
+					byte[] buf = new byte[((bb.get() & 0x7F << 24) | (bb.get() << 16) | bb.get() << 8 | bb.get()) & 0b1111111111111111111111111111111];
 					bb.get(buf);
 					return new Int31LengthArrayString(buf);
 				}
@@ -391,7 +390,7 @@ public class FunXMPP{
 		public byte[] getBytes(){
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			try{
-				baos.write(new byte[]{this.token, (byte) ((byte) this.data.length >> 16 & 0x0F), (byte) (this.data.length >> 8 & 0xFF), (byte) (this.data.length & 0xFF)});
+				baos.write(new byte[]{this.token,(byte) ((this.data.length >> 16) & 0x0F), (byte) ((this.data.length >> 8) & 0xFF), (byte) (this.data.length & 0xFF)});
 				baos.write(this.data);
 				baos.flush();
 			}
