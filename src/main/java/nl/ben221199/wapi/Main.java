@@ -8,22 +8,16 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.UUID;
 
 import com.whatsapp.proto.WA4Protos;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
-import org.whispersystems.libsignal.IdentityKey;
-import org.whispersystems.libsignal.IdentityKeyPair;
-import org.whispersystems.libsignal.InvalidKeyException;
 import org.whispersystems.libsignal.state.PreKeyRecord;
-import org.whispersystems.libsignal.state.PreKeyStore;
-import org.whispersystems.libsignal.state.SignedPreKeyRecord;
-import org.whispersystems.libsignal.state.impl.InMemoryPreKeyStore;
 import org.whispersystems.libsignal.util.KeyHelper;
 
 public class Main implements Runnable{
@@ -261,10 +255,10 @@ public class Main implements Runnable{
 
 	private static WA4Protos.ClientPayload getClientPayload(Config config){
 		WA4Protos.ClientPayload.UserAgent.AppVersion appVersion = WA4Protos.ClientPayload.UserAgent.AppVersion.newBuilder()
-				.setPrimary(2)
-				.setSecondary(20)
-				.setTertiary(206)
-				.setQuaternary(22)
+				.setPrimary(Constants.Version.WHATSAPP_VERSION_PRIMARY)
+				.setSecondary(Constants.Version.WHATSAPP_VERSION_SECONDARY)
+				.setTertiary(Constants.Version.WHATSAPP_VERSION_TERTIARY)
+				.setQuaternary(Constants.Version.WHATSAPP_VERSION_QUATERNARY)
 				.build();
 
 		WA4Protos.ClientPayload.UserAgent userAgent = WA4Protos.ClientPayload.UserAgent.newBuilder()
@@ -272,10 +266,10 @@ public class Main implements Runnable{
 				.setPlatform(WA4Protos.ClientPayload.UserAgent.Platform.ANDROID)
 				.setMcc(config.getMCC())
 				.setMnc(config.getMNC())
-				.setOsVersion("8.0.0")
-				.setManufacturer("samsung")
-				.setDevice("star2lte")
-				.setOsBuildNumber("star2ltexx-user 8.0.0 R16NW G965FXXU1ARCC release-keys")
+				.setOsVersion(Constants.UserAgent.Android.OS_VERSION)
+				.setManufacturer(Constants.UserAgent.Android.MANUFACTURER)
+				.setDevice(Constants.UserAgent.Android.DEVICE_NAME)
+				.setOsBuildNumber(Constants.UserAgent.Android.OS_BUILD_NUMBER)
 				.setPhoneId(config.getFDId())
 				.setLocaleLanguageIso6391(config.getLanguage())
 				.setLocalCountryIso31661Alpha2(config.getLanguageCountry())
@@ -285,8 +279,8 @@ public class Main implements Runnable{
 		return WA4Protos.ClientPayload.newBuilder()
 				.setUsername(config.getLogin())
 				.setPassive(true)
-				.setPushName("H_____________OI")
-//				.setSessionId(5)
+				.setPushName("I have a cool name")
+				.setSessionId(new Random().nextInt())
 				.setShortConnect(false)
 				.setConnectType(WA4Protos.ClientPayload.ConnectType.WIFI_UNKNOWN)
 				.setUserAgent(userAgent).build();

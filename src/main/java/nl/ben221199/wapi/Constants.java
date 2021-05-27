@@ -4,6 +4,25 @@ import java.util.Base64;
 
 public class Constants{
 
+	public static class Device{
+
+		public static class Android{
+
+			public static final String RO_BUILD_FLAVOR = "grandprimeve3gub-user";
+			public static final String RO_BUILD_ID = "R16NW";
+			public static final String RO_BUILD_TAGS = "release-keys";
+			public static final String RO_BUILD_VERSION_INCREMENTAL = "G531HUBU0APE2";
+			public static final String RO_BUILD_VERSION_RELEASE = "5.0.2";//8.0.0
+
+			public static final String RO_BUILD_DESCRIPTION = RO_BUILD_FLAVOR+" "+RO_BUILD_VERSION_RELEASE+" "+RO_BUILD_ID+" "+RO_BUILD_VERSION_INCREMENTAL+" "+RO_BUILD_TAGS;
+
+			public static final String RO_PRODUCT_DEVICE = "fortunave3g";//star2lte
+			public static final String RO_PRODUCT_MANUFACTURER = "samsung";
+
+		}
+
+	}
+
 	public static class Protocol{
 
 		public static final int EDGE_MAJOR = 0x00;
@@ -13,6 +32,23 @@ public class Constants{
 		public static final int MAJOR = 0x04;
 
 		public static final int MINOR = 0x01;
+
+	}
+
+	public static class UserAgent{
+
+		public static class Android{
+
+			public static final String OS_NAME = "Android";
+
+			public static final String OS_VERSION = Constants.Device.Android.RO_BUILD_VERSION_RELEASE;
+			public static final String MANUFACTURER = Constants.Device.Android.RO_PRODUCT_MANUFACTURER;
+			public static final String DEVICE_NAME = Constants.Device.Android.RO_PRODUCT_DEVICE;
+			public static final String OS_BUILD_NUMBER = Constants.Device.Android.RO_BUILD_DESCRIPTION;
+
+			public static final String USER_AGENT = "WhatsApp/"+Version.WHATSAPP_VERSION+" "+OS_NAME+"/"+OS_VERSION+" Device/"+MANUFACTURER+"-"+DEVICE_NAME;
+
+		}
 
 	}
 
@@ -37,8 +73,6 @@ public class Constants{
 
 			public static final byte[] SECRET_KEY = Base64.getDecoder().decode("eQV5aq/Cg63Gsq1sshN9T3gh+UUp0wIw0xgHYT1bnCjEqOJQKCRrWxdAe2yvsDeCJL+Y4G3PRD2HUF7oUgiGo8vGlNJOaux26k+A2F3hj8A=");
 
-			public static final String USER_AGENT = "WhatsApp/2.20.206.22 Android/8.0.0 Device/samsung-star2lte";
-
 			//		public static byte[] getSecretKey(){
 //			return PRIVATE_KEY;
 //		}
@@ -57,6 +91,17 @@ public class Constants{
 		public static final String BASE_URL = "https://v.whatsapp.net/v2/";
 
 		public static final byte[] PUBLIC_KEY_ENCRYPTED_PARAMETERS = {5, (byte) 142, (byte) 140, 15, 116, (byte) 195, (byte) 235, (byte) 197, (byte) 215, (byte) 166, (byte) 134, 92, 108,60, (byte) 132, 56, 86, (byte) 176, 97, 33, (byte) 204, (byte) 232, (byte) 234, 119, 77, 34, (byte) 251,111, 18, 37, 18, 48, 45};
+
+	}
+
+	public static class Version{
+
+		public static final int WHATSAPP_VERSION_PRIMARY = 2;
+		public static final int WHATSAPP_VERSION_SECONDARY = 20;
+		public static final int WHATSAPP_VERSION_TERTIARY = 206;
+		public static final int WHATSAPP_VERSION_QUATERNARY = 22;
+
+		public static final String WHATSAPP_VERSION = String.format("%d.%d.%d.%d",WHATSAPP_VERSION_PRIMARY,WHATSAPP_VERSION_SECONDARY,WHATSAPP_VERSION_TERTIARY,WHATSAPP_VERSION_QUATERNARY);//"2.20.206.22"
 
 	}
 

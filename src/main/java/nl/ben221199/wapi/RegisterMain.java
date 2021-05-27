@@ -59,7 +59,7 @@ public class RegisterMain{
 
 		String[] existParams = RegisterMain.getExistParams(config);
 		String existData = Verification.exist(
-				Constants.Verification.Android.USER_AGENT,
+				Constants.UserAgent.Android.USER_AGENT,
 				true,
 				existParams);
 		config.setString("__exist_request",String.join("&",existParams));
@@ -87,7 +87,7 @@ public class RegisterMain{
 
 		String[] codeParams = RegisterMain.getCodeParams(config);
 		String codeData = Verification.code(
-				Constants.Verification.Android.USER_AGENT,
+				Constants.UserAgent.Android.USER_AGENT,
 				true,
 				codeParams);
 		config.setString("__code_request",String.join("&",codeParams));
@@ -115,7 +115,7 @@ public class RegisterMain{
 
 		String[] registerParams = RegisterMain.getRegisterParams(config);
 		String registerData = Verification.register(
-				Constants.Verification.Android.USER_AGENT,
+				Constants.UserAgent.Android.USER_AGENT,
 				true,
 				registerParams);
 		config.setString("__register_request",String.join("&",registerParams));
@@ -171,12 +171,12 @@ public class RegisterMain{
 		config.setE2ESkeySig(Base64.encode(e_skey.getSignature()));
 
 		/*EXIST*/
-		config.setNetworkOperatorName("Android");
+		config.setNetworkOperatorName("Partner");
 		config.setReadPhonePermissionGranted(true);
 		config.setToken(Verification.calculateToken(config.getInternalNumber()));
-		config.setSIMOperatorName("Android");
+		config.setSIMOperatorName("Partner");
 		config.setOfflineAB(new JSONObject());
-		config.setSIMState(0);
+		config.setSIMState(5);
 
 		/*CODE*/
 		config.setSIMMNC("000");
@@ -187,15 +187,15 @@ public class RegisterMain{
 		config.setHasAutoVerification(2);
 
 		/*REGISTER*/
-		VNameCertProtos.VerifiedNameCertificate.Details details = VNameCertProtos.VerifiedNameCertificate.Details.newBuilder().build();
-		VNameCertProtos.VerifiedNameCertificate vnameCert = VNameCertProtos.VerifiedNameCertificate.newBuilder().setDetails(details.toByteString()).setSignature(ByteString.EMPTY).build();
+//		VNameCertProtos.VerifiedNameCertificate.Details details = VNameCertProtos.VerifiedNameCertificate.Details.newBuilder().build();
+//		VNameCertProtos.VerifiedNameCertificate vnameCert = VNameCertProtos.VerifiedNameCertificate.newBuilder().setDetails(details.toByteString()).setSignature(ByteString.EMPTY).build();
 		config.setEntered(2);
-		config.setNetworkOperatorName("Android");
+		config.setNetworkOperatorName("Partner");
 		config.setSIMMNC("000");
-		config.setVName(Base64.encode(vnameCert.toByteArray()));
+//		config.setVName(Base64.encode(vnameCert.toByteArray()));
 		config.setSIMMCC("000");
 		config.setMNC("000");
-		config.setSIMOperatorName("Android");
+		config.setSIMOperatorName("Partner");
 		config.setMCC("000");
 	}
 
