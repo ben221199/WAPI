@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 
 import nl.ben221199.wapi.protocol.WA02;
@@ -122,10 +121,14 @@ public class FunXMPP{
 					return new Int31LengthArrayString(buf);
 				}
 				case 0xFF:{
-					byte startByte = bb.get();
-					byte[] buf = new byte[startByte & 0x7F];
+					int startByte = bb.get() & 0xFF;
+
+					boolean ignoreLast = startByte>=0x80;
+					int size = startByte & 0x7F;
+
+					byte[] buf = new byte[size];
 					bb.get(buf);
-					return new PackedNibble(PackedNibble.unpack(startByte,buf));
+					return new PackedNibble(PackedNibble.unpack(ignoreLast,size,buf));
 				}
 				default:{
 					return new Token((byte) b);
@@ -351,7 +354,7 @@ public class FunXMPP{
 		public String toString() {
 			return "Int8LengthArrayString{" +
 					"length=" + length +
-					", data='" + Base64.getEncoder().encodeToString(data) + '\'' +
+					", data='" + Base64.encode(data) + '\'' +
 					'}';
 		}
 
@@ -402,7 +405,7 @@ public class FunXMPP{
 		public String toString() {
 			return "Int20LengthArrayString{" +
 					"length=" + length +
-					", data='" + Base64.getEncoder().encodeToString(data) + '\'' +
+					", data='" + Base64.encode(data) + '\'' +
 					'}';
 		}
 
@@ -442,7 +445,7 @@ public class FunXMPP{
 		public String toString() {
 			return "Int31LengthArrayString{" +
 					"length=" + length +
-					", data='" + Base64.getEncoder().encodeToString(data) + '\'' +
+					", data='" + Base64.encode(data) + '\'' +
 					'}';
 		}
 
@@ -474,12 +477,12 @@ public class FunXMPP{
 			return baos.toByteArray();
 		}
 
-		public static byte[] unpack(byte startByte,byte[] packed){
-			if((startByte & 0x7F)==0){
+		public static byte[] unpack(boolean ignoreLast,int length,byte[] packed){
+			if(length==0){
 				return new byte[0];
 			}
-			byte[] ret = new byte[(startByte & 0x7F)*2];
-			for(int i=0;i<(startByte & 0x7F);i++){
+			byte[] ret = new byte[length*2];
+			for(int i=0;i<packed.length;i++){
 				byte currByte = packed[i];
 				byte firstNibble = (byte) ((currByte & 0xF0) >> 4);
 				byte secondNibble = (byte) (currByte & 0x0F);
@@ -492,10 +495,9 @@ public class FunXMPP{
 				}
 				ret[i*2+1] = PackedNibble.unpackByte(secondNibble);
 			}
-			if((startByte >> 7)==0){
+			if(ignoreLast){
 				ret = Arrays.copyOfRange(ret,0,ret.length-1);
 			}
-//			System.out.println("N "+new String(ret));
 			return ret;
 		}
 
@@ -513,7 +515,7 @@ public class FunXMPP{
 		@Override
 		public String toString() {
 			return "PackedNibble{" +
-					"data='" + Base64.getEncoder().encodeToString(data) + '\'' +
+					"data='" + Base64.encode(data) + '\'' +
 					'}';
 		}
 
@@ -586,7 +588,7 @@ public class FunXMPP{
 		@Override
 		public String toString() {
 			return "PackedHex{" +
-					"data='" + Base64.getEncoder().encodeToString(data) + '\'' +
+					"data='" + Base64.encode(data) + '\'' +
 					'}';
 		}
 
@@ -689,7 +691,7 @@ public class FunXMPP{
 			}
 
 			if(!elem.ownText().isEmpty()){
-				n.data = Base64.getDecoder().decode(elem.ownText());
+				n.data = Base64.decode(elem.ownText());
 			}
 
 			return n;
@@ -718,7 +720,7 @@ public class FunXMPP{
 						output.append(child.getString());
 					}
 				}else{
-					output.append(Base64.getEncoder().encodeToString(this.data));
+					output.append(Base64.encode(this.data));
 				}
 				output.append("</").append(this.tag.getString()).append(">");
 			}
