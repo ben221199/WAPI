@@ -127,69 +127,69 @@ public class Config{
 		this.setInt("entered",entered);
 	}
 
-	public String getE2EIdentFull(){
-		return this.getString("e2e_ident_full");
-	}
+//	public String getE2EIdentFull(){
+//		return this.getString("e2e_ident_full");
+//	}
+//
+//	public void setE2EIdentFull(String e_ident){
+//		this.setString("e2e_ident_full",e_ident);
+//	}
 
-	public void setE2EIdentFull(String e_ident){
-		this.setString("e2e_ident_full",e_ident);
-	}
-
-	public String getE2ESkeyFull(){
-		return this.getString("e2e_skey_full");
-	}
-
-	public void setE2ESkeyFull(String e_skey){
-		this.setString("e2e_skey_full",e_skey);
-	}
-
-	public int getE2ERegId(){
-		return this.getInt("e_regid");
-	}
-
-	public void setE2ERegId(int e_regid){
-		this.setInt("e_regid",e_regid);
-	}
-
-	public int getE2EKeyType(){
-		return this.getInt("e_keytype");
-	}
-
-	public void setE2EKeyType(int e_keytype){
-		this.setInt("e_keytype",e_keytype);
-	}
-
-	public String getE2EIdent(){
-		return this.getString("e_ident");
-	}
-
-	public void setE2EIdent(String e_ident){
-		this.setString("e_ident",e_ident);
-	}
-
-	public int getE2ESKeyId(){
-		return this.getInt("e_skey_id");
-	}
-
-	public void setE2ESKeyId(int e_skey_id){
-		this.setInt("e_skey_id",e_skey_id);
-	}
-
-	public String getE2ESkeyVal(){
-		return this.getString("e_skey_val");
-	}
-
-	public void setE2ESkeyVal(String e_skey_val){
-		this.setString("e_skey_val",e_skey_val);
-	}
-
-	public String getE2ESkeySig(){
-		return this.getString("e_skey_sig");
-	}
-
-	public void setE2ESkeySig(String e_skey_sig){
-		this.setString("e_skey_sig",e_skey_sig);
-	}
+//	public String getE2ESkeyFull(){
+//		return this.getString("e2e_skey_full");
+//	}
+//
+//	public void setE2ESkeyFull(String e_skey){
+//		this.setString("e2e_skey_full",e_skey);
+//	}
+//
+//	public int getE2ERegId(){
+//		return this.getInt("e_regid");
+//	}
+//
+//	public void setE2ERegId(int e_regid){
+//		this.setInt("e_regid",e_regid);
+//	}
+//
+//	public int getE2EKeyType(){
+//		return this.getInt("e_keytype");
+//	}
+//
+//	public void setE2EKeyType(int e_keytype){
+//		this.setInt("e_keytype",e_keytype);
+//	}
+//
+//	public String getE2EIdent(){
+//		return this.getString("e_ident");
+//	}
+//
+//	public void setE2EIdent(String e_ident){
+//		this.setString("e_ident",e_ident);
+//	}
+//
+//	public int getE2ESKeyId(){
+//		return this.getInt("e_skey_id");
+//	}
+//
+//	public void setE2ESKeyId(int e_skey_id){
+//		this.setInt("e_skey_id",e_skey_id);
+//	}
+//
+//	public String getE2ESkeyVal(){
+//		return this.getString("e_skey_val");
+//	}
+//
+//	public void setE2ESkeyVal(String e_skey_val){
+//		this.setString("e_skey_val",e_skey_val);
+//	}
+//
+//	public String getE2ESkeySig(){
+//		return this.getString("e_skey_sig");
+//	}
+//
+//	public void setE2ESkeySig(String e_skey_sig){
+//		this.setString("e_skey_sig",e_skey_sig);
+//	}
 
 	public byte[] getEdgeRoutingInfo(){
 		return Base64.decode(this.getString("edge_routing_info"));

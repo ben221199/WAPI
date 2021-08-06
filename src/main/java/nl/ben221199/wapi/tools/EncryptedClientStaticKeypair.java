@@ -6,7 +6,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -16,6 +15,8 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
+
+import nl.ben221199.wapi.Base64;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.json.JSONArray;
@@ -58,9 +59,9 @@ public class EncryptedClientStaticKeypair{
 	public JSONArray toJSONArray(){
 		JSONArray arr = new JSONArray();
 		arr.put(this.type);
-		arr.put(Base64.getEncoder().encodeToString(this.ciphertext));
-		arr.put(Base64.getEncoder().encodeToString(this.iv));
-		arr.put(Base64.getEncoder().encodeToString(this.salt));
+		arr.put(Base64.encode(this.ciphertext));
+		arr.put(Base64.encode(this.iv));
+		arr.put(Base64.encode(this.salt));
 		arr.put(this.password);
 		return arr;
 	}
@@ -72,20 +73,20 @@ public class EncryptedClientStaticKeypair{
 		SecureRandom.getInstance("SHA1PRNG").nextBytes(ivBytes);
 		byte[] passwordBytes = new byte[16];
 		SecureRandom.getInstance("SHA1PRNG").nextBytes(passwordBytes);
-		String encodeToString = Base64.getEncoder().encodeToString(passwordBytes);
+		String encodeToString = Base64.encode(passwordBytes);
 		String sb = EncryptedClientStaticKeypair.doSomething(EncryptedClientStaticKeypair.SOMETOKEN)+encodeToString;
 		SecretKeySpec secretKeySpec = new SecretKeySpec(doSomething2(sb, saltBytes), "AES/OFB/NoPadding");
 		Cipher instance = Cipher.getInstance("AES/OFB/NoPadding");
 		instance.init(Cipher.ENCRYPT_MODE, secretKeySpec,new IvParameterSpec(ivBytes));
 		byte[] ciphertext = instance.doFinal(client_static_keypair);
-		return new EncryptedClientStaticKeypair(EncryptedClientStaticKeypair.TYPE, ciphertext, ivBytes, saltBytes, Base64.getEncoder().encodeToString(passwordBytes));
+		return new EncryptedClientStaticKeypair(EncryptedClientStaticKeypair.TYPE, ciphertext, ivBytes, saltBytes, Base64.encode(passwordBytes));
 	}
 
 	public static EncryptedClientStaticKeypair fromJSONArray(JSONArray arr){
 		int type = arr.getInt(0);
-		byte[] ciphertext = Base64.getDecoder().decode(arr.getString(1));
-		byte[] random1 = Base64.getDecoder().decode(arr.getString(2));
-		byte[] random2 = Base64.getDecoder().decode(arr.getString(3));
+		byte[] ciphertext = Base64.decode(arr.getString(1));
+		byte[] random1 = Base64.decode(arr.getString(2));
+		byte[] random2 = Base64.decode(arr.getString(3));
 		String random3 = arr.getString(4);
 		return new EncryptedClientStaticKeypair(type,ciphertext,random1,random2,random3);
 	}

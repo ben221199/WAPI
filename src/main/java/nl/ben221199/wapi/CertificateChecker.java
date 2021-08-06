@@ -20,30 +20,30 @@ public class CertificateChecker{
 
 	public static boolean check(WA4Protos.NoiseCertificate certificate, DHState remote) throws InvalidProtocolBufferException{
 		WA4Protos.NoiseCertificate.Details details = WA4Protos.NoiseCertificate.Details.parseFrom(certificate.getDetails());
-		System.out.println("[] Certificate = "+certificate.toString().trim());
-		System.out.println("[] - Details = "+details.toString().trim());
-
-		System.err.printf("[CC] NoiseCertificate(signature=[%d bytes], serial=%d, issuer='%s', expires=%d, subject='%s', key=[%d bytes])",certificate.getSignature().size(),details.getSerial(),details.getIssuer(),details.getExpires(),details.getSubject(),details.getKey().size()).println();
+//		System.out.println("[] Certificate = "+certificate.toString().trim());
+//		System.out.println("[] - Details = "+details.toString().trim());
+//
+//		System.err.printf("[CC] NoiseCertificate(signature=[%d bytes], serial=%d, issuer='%s', expires=%d, subject='%s', key=[%d bytes])",certificate.getSignature().size(),details.getSerial(),details.getIssuer(),details.getExpires(),details.getSubject(),details.getKey().size()).println();
 
 		if(!PUBKEYS.containsKey(details.getIssuer())){
-			System.out.printf("[CC] noise certificate issued by unknown source: issuer=%s",details.getIssuer()).println();
+//			System.out.printf("[CC] noise certificate issued by unknown source: issuer=%s",details.getIssuer()).println();
 			return false;
 		}
 
 		if(!Curve25519.getInstance(Curve25519.BEST).verifySignature(PUBKEYS.get(details.getIssuer()),certificate.getDetails().toByteArray(),certificate.getSignature().toByteArray())) {
-			System.out.printf("invalid signature on noise ceritificate; issuer=%s",details.getIssuer()).println();
+//			System.out.printf("invalid signature on noise ceritificate; issuer=%s",details.getIssuer()).println();
 			return false;
 		}
 
 		byte[] pubkey = new byte[32];
 		remote.getPublicKey(pubkey,0);
 		if(!Arrays.equals(details.getKey().toByteArray(),pubkey)){
-			System.out.printf("[CC] noise certificate key does not match proposed server static key; issuer=%s",details.getIssuer()).println();
+//			System.out.printf("[CC] noise certificate key does not match proposed server static key; issuer=%s",details.getIssuer()).println();
 			return false;
 		}
 
 		if(details.hasExpires() && details.getExpires()<System.currentTimeMillis()/1000){
-			System.out.printf("[CC] noise certificate expired; issuer=%s",details.getIssuer()).println();
+//			System.out.printf("[CC] noise certificate expired; issuer=%s",details.getIssuer()).println();
 			return false;
 		}
 

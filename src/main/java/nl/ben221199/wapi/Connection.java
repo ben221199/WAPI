@@ -12,6 +12,7 @@ import java.net.Socket;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.util.Arrays;
 
 public class Connection{
 
@@ -24,15 +25,16 @@ public class Connection{
 	private KeyPair s;
 	private PublicKey rs;
 
-	private WA4Protos.HandshakeMessage.ClientHello client_hello;
-	private WA4Protos.HandshakeMessage.ServerHello server_hello;
-	private WA4Protos.HandshakeMessage.ClientFinish client_finish;
-
-	private WA4Protos.NoiseCertificate noiseCertificate;
+//	private WA4Protos.HandshakeMessage.ClientHello client_hello;
+//	private WA4Protos.HandshakeMessage.ServerHello server_hello;
+//	private WA4Protos.HandshakeMessage.ClientFinish client_finish;
+//
+//	private WA4Protos.NoiseCertificate noiseCertificate;
 	private WA4Protos.ClientPayload clientPayload;
 
 	public Connection(String host,int port) throws IOException{
 		this.socket = new Socket(host,port);
+		this.socket.setKeepAlive(true);
 	}
 
 	public Connection setEdgeRoutingInfo(byte[] edge_routing_info){
@@ -56,6 +58,9 @@ public class Connection{
 	}
 
 	public void start() throws IOException{
+		if(this.socket.isClosed()){
+			this.reset();
+		}
 		this.in = new FunInputStream(this.socket.getInputStream());
 		this.out = new FunOutputStream(this.socket.getOutputStream());
 		this.doHandshake();
@@ -100,39 +105,20 @@ public class Connection{
 			this.handshake.getLocalKeyPair().setPrivateKey(this.s.getPrivate().getEncoded(),0);
 		}
 		this.handshake.start();
+		System.out.println("Handshake started");
 
-
-
-
-
-
-
-
-		System.out.println("[Action] "+this.handshake.getAction());
-		byte[] buffer = new byte[1024*8];
-		byte[] client_hello_payload = new byte[0];
-		int client_hello_length = 0;
-		try{
-			client_hello_length = this.handshake.writeMessage(buffer,0,client_hello_payload,0,client_hello_payload.length);
-		}catch(ShortBufferException e){
-			e.printStackTrace();
-		}
-		byte[] client_hello_ephemeral = new byte[client_hello_length];
-		System.arraycopy(buffer,0,client_hello_ephemeral,0,client_hello_ephemeral.length);
-		// => e
-		//System.err.println(new String(client_hello_ephemeral)+" ["+client_hello_ephemeral.length+"]");
+		System.out.println("Sending CLIENT HELLO: e");
+		byte[] clientHello = this.writeHandshakeMessage(new byte[0]);
+		byte[] client_hello_ephemeral = Arrays.copyOfRange(clientHello,0,32);
 		WA4Protos.HandshakeMessage.ClientHello client_hello = WA4Protos.HandshakeMessage.ClientHello.newBuilder().setEphemeral(ByteString.copyFrom(client_hello_ephemeral)).build();
 		WA4Protos.HandshakeMessage client_hello_message = WA4Protos.HandshakeMessage.newBuilder().setClientHello(client_hello).build();
 		out.writeSegment(client_hello_message.toByteArray());
 		out.flush();
-		System.out.println("[Client] "+client_hello_message.toString().trim());
-		System.out.println("P> "+client_hello.getEphemeral().size());
-		System.out.println("=======================================================");
+		System.out.println("Sent CLIENT HELLO");
 
-		System.out.println("[Action] "+this.handshake.getAction());
-		// <= e, ee, s, es
+		System.out.println("Receiving SERVER HELLO: e, ee, s, es");
 		byte[] server_hello_data = in.readSegment();
-		//System.out.println(bytesToHex(server_hello_data));
+		System.err.println(server_hello_data.length+" "+new String(server_hello_data));
 		WA4Protos.HandshakeMessage server_hello_message = WA4Protos.HandshakeMessage.parseFrom(server_hello_data);
 		if(!server_hello_message.hasServerHello()){
 			System.err.println("Doesn't have server hello");
@@ -140,41 +126,19 @@ public class Connection{
 		}
 		WA4Protos.HandshakeMessage.ServerHello server_hello = server_hello_message.getServerHello();
 		byte[] server_hello_buffer = server_hello.getEphemeral().concat(server_hello.getStatic().concat(server_hello.getPayload())).toByteArray();
-		System.err.println(ByteString.copyFrom(server_hello_buffer));
-		byte[] server_hello_info = new byte[4096];
-		int server_hello_length = 0;
-		try{
-			server_hello_length = this.handshake.readMessage(server_hello_buffer,0,server_hello_buffer.length,server_hello_info,0);
-		}catch(ShortBufferException | BadPaddingException e){
-			e.printStackTrace();
-		}
-		server_hello_info = ByteString.copyFrom(server_hello_info).substring(0,server_hello_length).toByteArray();
-		System.out.println("[Client] "+server_hello_message.toString().trim());
-		System.out.println("P> "+server_hello_message.getServerHello().getEphemeral().size());
-		System.out.println("P> "+server_hello_message.getServerHello().getStatic().size());
-		System.out.println("P> "+server_hello_message.getServerHello().getPayload().size());
-		WA4Protos.NoiseCertificate noiseCertificate = WA4Protos.NoiseCertificate.parseFrom(server_hello_info);
+		byte[] serverHello = this.readHandshakeMessage(server_hello_buffer);
+		WA4Protos.NoiseCertificate noiseCertificate = WA4Protos.NoiseCertificate.parseFrom(serverHello);
 		boolean isValid = CertificateChecker.check(noiseCertificate,this.handshake.getRemotePublicKey());
-		System.out.println("CC = "+isValid);
-		System.out.println("=======================================================");
+		System.out.println("Received SERVER HELLO: Certificate is"+(isValid?"":" NOT")+" valid.");
 
-		System.out.println("[Action] "+this.handshake.getAction());
-		// => s, se
-		byte[] buffer2 = new byte[1000];
-		byte[] client_finish_payload = clientPayload.toByteArray();
-		//client_finish_payload = new byte[]{(byte)0x08,(byte)0xFA,(byte)0x9D,(byte)0xFE,(byte)0xF7,(byte)0x2C,(byte)0x18,(byte)0x01,(byte)0x2A,(byte)0x94,(byte)0x01,(byte)0x08,(byte)0x00,(byte)0x12,(byte)0x06,(byte)0x08,(byte)0x02,(byte)0x10,(byte)0x13,(byte)0x18,(byte)0x33,(byte)0x1A,(byte)0x03,(byte)0x30,(byte)0x30,(byte)0x30,(byte)0x22,(byte)0x03,(byte)0x30,(byte)0x30,(byte)0x30,(byte)0x2A,(byte)0x05,(byte)0x38,(byte)0x2E,(byte)0x30,(byte)0x2E,(byte)0x30,(byte)0x32,(byte)0x07,(byte)0x73,(byte)0x61,(byte)0x6D,(byte)0x73,(byte)0x75,(byte)0x6E,(byte)0x67,(byte)0x3A,(byte)0x08,(byte)0x73,(byte)0x74,(byte)0x61,(byte)0x72,(byte)0x32,(byte)0x6C,(byte)0x74,(byte)0x65,(byte)0x42,(byte)0x36,(byte)0x73,(byte)0x74,(byte)0x61,(byte)0x72,(byte)0x32,(byte)0x6C,(byte)0x74,(byte)0x65,(byte)0x78,(byte)0x78,(byte)0x2D,(byte)0x75,(byte)0x73,(byte)0x65,(byte)0x72,(byte)0x20,(byte)0x38,(byte)0x2E,(byte)0x30,(byte)0x2E,(byte)0x30,(byte)0x20,(byte)0x52,(byte)0x31,(byte)0x36,(byte)0x4E,(byte)0x57,(byte)0x20,(byte)0x47,(byte)0x39,(byte)0x36,(byte)0x35,(byte)0x46,(byte)0x58,(byte)0x58,(byte)0x55,(byte)0x31,(byte)0x41,(byte)0x52,(byte)0x43,(byte)0x43,(byte)0x20,(byte)0x72,(byte)0x65,(byte)0x6C,(byte)0x65,(byte)0x61,(byte)0x73,(byte)0x65,(byte)0x2D,(byte)0x6B,(byte)0x65,(byte)0x79,(byte)0x73,(byte)0x4A,(byte)0x24,(byte)0x61,(byte)0x65,(byte)0x65,(byte)0x66,(byte)0x65,(byte)0x36,(byte)0x61,(byte)0x30,(byte)0x2D,(byte)0x39,(byte)0x31,(byte)0x33,(byte)0x38,(byte)0x2D,(byte)0x34,(byte)0x31,(byte)0x32,(byte)0x63,(byte)0x2D,(byte)0x62,(byte)0x66,(byte)0x38,(byte)0x61,(byte)0x2D,(byte)0x39,(byte)0x32,(byte)0x62,(byte)0x64,(byte)0x33,(byte)0x30,(byte)0x65,(byte)0x34,(byte)0x62,(byte)0x32,(byte)0x35,(byte)0x32,(byte)0x5A,(byte)0x02,(byte)0x65,(byte)0x6E,(byte)0x62,(byte)0x02,(byte)0x55,(byte)0x53,(byte)0x3A,(byte)0x0A,(byte)0x63,(byte)0x6F,(byte)0x6E,(byte)0x73,(byte)0x6F,(byte)0x6E,(byte)0x61,(byte)0x6E,(byte)0x63,(byte)0x65,(byte)0x4D,(byte)0x0D,(byte)0xE4,(byte)0x7B,(byte)0x99,(byte)0x50,(byte)0x01,(byte)0x60,(byte)0x01};
-//		System.out.println("<> "+bytesToHex(client_finish_payload));
-		int client_finish_length = 0;
-		try{
-			client_finish_length = this.handshake.writeMessage(buffer2,0,client_finish_payload,0,client_finish_payload.length);
-		}catch(ShortBufferException e){
-			e.printStackTrace();
-		}
+		System.out.println("Sending CLIENT FINISH: s, se");
+		byte[] clientFinish = this.writeHandshakeMessage(clientPayload.toByteArray());
+
+
 //		System.out.println("<> "+bytesToHex(buffer2));
 
-		byte[] staticBytes = ByteString.copyFrom(buffer2).substring(0,48).toByteArray();
-		byte[] payloadBytes = ByteString.copyFrom(buffer2).substring(48,client_finish_length).toByteArray();
-		System.out.println("PP "+client_finish_payload.length+" & "+payloadBytes.length);
+		byte[] staticBytes = ByteString.copyFrom(clientFinish).substring(0,48).toByteArray();
+		byte[] payloadBytes = ByteString.copyFrom(clientFinish).substring(48,clientFinish.length).toByteArray();
 
 		WA4Protos.HandshakeMessage.ClientFinish client_finish = WA4Protos.HandshakeMessage.ClientFinish.newBuilder()
 				.setStatic(ByteString.copyFrom(staticBytes))
@@ -182,27 +146,53 @@ public class Connection{
 				.build();
 		byte[] buf = new byte[32];
 		this.handshake.getLocalKeyPair().getPublicKey(buf,0);
-//		System.err.println("{} "+bytesToHex(buf));
-//		System.err.println("{} "+bytesToHex(kp.getPublic().getEncoded()));
-		//System.err.println("<> "+bytesToHex(ByteString.copyFrom(buffer2).substring(64,client_finish_length).toByteArray()));
-		//System.err.println(client_finish_length);
-
 		WA4Protos.HandshakeMessage client_finish_message = WA4Protos.HandshakeMessage.newBuilder().setClientFinish(client_finish).build();
-		System.out.println(client_finish_length+" / "+ByteString.copyFrom(buffer2).substring(48,client_finish_length));
 		out.writeSegment(client_finish_message.toByteArray());
-		//out.writeSegment("AAAAAAAAAAAAA".getBytes());
 		out.flush();
-		System.out.println("[Client] "+client_finish_message.toString().trim());
-		System.out.println("P> "+client_finish.getStatic().size());
-		System.out.println("P> "+client_finish.getPayload().size());
-		System.out.println("=======================================================");
-
-		System.out.println("[Action] "+this.handshake.getAction());
+		System.out.println("Sent CLIENT FINISH");
 	}
 
 	private void doHandshakeIK() throws IOException{}
 
 	private void doHandshakeXXfallback() throws IOException{}
+
+	private byte[] readHandshakeMessage(byte[] data){
+		byte[] buffer = new byte[data.length+1024];
+		int length = 0;
+		try{
+			length = this.handshake.readMessage(data,0,data.length,buffer,0);
+		}catch(BadPaddingException|ShortBufferException e){
+			e.printStackTrace();
+		}
+		if(length==0){
+			return new byte[0];
+		}
+		if(length==buffer.length){
+			return buffer;
+		}
+		byte[] result = new byte[length];
+		System.arraycopy(buffer,0,result,0,length);
+		return result;
+	}
+
+	private byte[] writeHandshakeMessage(byte[] data){
+		byte[] buffer = new byte[data.length+1024];
+		int length = 0;
+		try{
+			length = this.handshake.writeMessage(buffer,0,data,0,data.length);
+		}catch(ShortBufferException e){
+			e.printStackTrace();
+		}
+		if(length==0){
+			return new byte[0];
+		}
+		if(length==buffer.length){
+			return buffer;
+		}
+		byte[] result = new byte[length];
+		System.arraycopy(buffer,0,result,0,length);
+		return result;
+	}
 
 	private void createHandshakeState(String protocol){
 		try{
@@ -226,6 +216,23 @@ public class Connection{
 
 	public FunOutputStream getOutputStream(){
 		return this.out;
+	}
+
+	private void reset() throws IOException{
+		this.socket = new Socket(this.socket.getInetAddress(),this.socket.getPort());
+		this.socket.setKeepAlive(true);
+		this.in = null;
+		this.out = null;
+		this.handshake = null;
+	}
+
+	public void close() throws IOException{
+		this.socket.close();
+	}
+
+	public void restart() throws IOException{
+		this.close();
+		this.start();
 	}
 
 }
