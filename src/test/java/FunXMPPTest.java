@@ -66,7 +66,7 @@ public class FunXMPPTest{
 
 		//WhatsApp 4.1 specific
 		String secondaryTokenString2 = secondaryToken2.getString();
-		Assertions.assertEquals("screen_height",secondaryTokenString2);
+		Assertions.assertEquals("invis",secondaryTokenString2);
 	}
 
 	@Test
@@ -83,7 +83,7 @@ public class FunXMPPTest{
 
 		//WhatsApp 4.1 specific
 		String secondaryTokenString = secondaryToken.getString();
-		Assertions.assertEquals("media.fsub1-1.fna.whatsapp.net",secondaryTokenString);
+		Assertions.assertEquals("fs_time_spent",secondaryTokenString);
 
 		FunXMPP.SecondaryToken secondaryToken2 = (FunXMPP.SecondaryToken) FunXMPP.Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
 		Assertions.assertNotNull(secondaryToken2);
