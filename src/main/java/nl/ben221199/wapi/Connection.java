@@ -66,6 +66,10 @@ public class Connection{
 		this.doHandshake();
 	}
 
+	public boolean isConnected(){
+		return this.socket.isConnected() && !this.socket.isClosed();
+	}
+
 	private void doHandshake() throws IOException{
 		if(this.edge_routing_info!=null){
 			this.writeEdgeHeader();
@@ -118,7 +122,6 @@ public class Connection{
 
 		System.out.println("Receiving SERVER HELLO: e, ee, s, es");
 		byte[] server_hello_data = in.readSegment();
-		System.err.println(server_hello_data.length+" "+new String(server_hello_data));
 		WA4Protos.HandshakeMessage server_hello_message = WA4Protos.HandshakeMessage.parseFrom(server_hello_data);
 		if(!server_hello_message.hasServerHello()){
 			System.err.println("Doesn't have server hello");

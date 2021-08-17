@@ -82,9 +82,20 @@ public class JSONSignalStore implements SignalProtocolStore{
 		throw new InvalidKeyIdException("PreKey doesn't exist");
 	}
 
+	public List<PreKeyRecord> loadPreKeys(){
+		return List.of(this.preKeys.values().toArray(new PreKeyRecord[0]));
+	}
+
 	@Override
 	public void storePreKey(int i, PreKeyRecord preKeyRecord){
 		this.preKeys.put(i,preKeyRecord);
+	}
+
+	public void storePreKeys(List<PreKeyRecord> preKeyRecords){
+		this.preKeys.clear();
+		for(PreKeyRecord preKeyRecord : preKeyRecords){
+			this.preKeys.put(preKeyRecord.getId(),preKeyRecord);
+		}
 	}
 
 	@Override

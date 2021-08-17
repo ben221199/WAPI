@@ -12,6 +12,7 @@ import nl.ben221199.wapi.protocol.WA41;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
+import org.jsoup.parser.Parser;
 
 public class FunXMPP{
 
@@ -666,7 +667,7 @@ public class FunXMPP{
 			if(XMLSTREAMEND.equalsIgnoreCase(xml)){
 				return Node.end();
 			}
-			Element elem = Jsoup.parse(xml).body().children().first();
+			Element elem = Jsoup.parse(xml,"",Parser.xmlParser()).child(0);
 			return Node.from(elem);
 		}
 
