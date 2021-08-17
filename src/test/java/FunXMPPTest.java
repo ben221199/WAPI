@@ -42,59 +42,59 @@ public class FunXMPPTest{
 		Assertions.assertEquals("id",tokenString2);
 	}
 
-	@Test
-	public void testSecondaryTokenPage1(){
-		byte tokenByte = (byte) 0xEC;
-		byte secondaryTokenByte = 16;
-		byte[] bytes = new byte[]{(byte) 0xEC,16};
+//	@Test
+//	public void testSecondaryTokenPage1(){
+//		byte tokenByte = (byte) 0xEC;
+//		byte secondaryTokenByte = 16;
+//		byte[] bytes = new byte[]{(byte) 0xEC,16};
+//
+//		FunXMPP.SecondaryToken secondaryToken = new FunXMPP.SecondaryToken(tokenByte,secondaryTokenByte);
+//		Assertions.assertNotNull(secondaryToken);
+//
+//		byte[] secondaryTokenBytes = secondaryToken.getBytes();
+//		Assertions.assertArrayEquals(bytes,secondaryTokenBytes);
+//
+//		//WhatsApp 4.1 specific
+//		String secondaryTokenString = secondaryToken.getString();
+//		Assertions.assertEquals("screen_height",secondaryTokenString);
+//
+//		FunXMPP.SecondaryToken secondaryToken2 = (FunXMPP.SecondaryToken) FunXMPP.Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
+//		Assertions.assertNotNull(secondaryToken2);
+//
+//		byte[] secondaryTokenBytes2 = secondaryToken2.getBytes();
+//		Assertions.assertArrayEquals(bytes,secondaryTokenBytes2);
+//
+//		//WhatsApp 4.1 specific
+//		String secondaryTokenString2 = secondaryToken2.getString();
+//		Assertions.assertEquals("invis",secondaryTokenString2);
+//	}
 
-		FunXMPP.SecondaryToken secondaryToken = new FunXMPP.SecondaryToken(tokenByte,secondaryTokenByte);
-		Assertions.assertNotNull(secondaryToken);
-
-		byte[] secondaryTokenBytes = secondaryToken.getBytes();
-		Assertions.assertArrayEquals(bytes,secondaryTokenBytes);
-
-		//WhatsApp 4.1 specific
-		String secondaryTokenString = secondaryToken.getString();
-		Assertions.assertEquals("screen_height",secondaryTokenString);
-
-		FunXMPP.SecondaryToken secondaryToken2 = (FunXMPP.SecondaryToken) FunXMPP.Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
-		Assertions.assertNotNull(secondaryToken2);
-
-		byte[] secondaryTokenBytes2 = secondaryToken2.getBytes();
-		Assertions.assertArrayEquals(bytes,secondaryTokenBytes2);
-
-		//WhatsApp 4.1 specific
-		String secondaryTokenString2 = secondaryToken2.getString();
-		Assertions.assertEquals("invis",secondaryTokenString2);
-	}
-
-	@Test
-	public void testSecondaryTokenPage3(){
-		byte tokenByte = (byte) 0xEE;
-		byte secondaryTokenByte = 99;
-		byte[] bytes = new byte[]{(byte) 0xEE,99};
-
-		FunXMPP.SecondaryToken secondaryToken = new FunXMPP.SecondaryToken(tokenByte,secondaryTokenByte);
-		Assertions.assertNotNull(secondaryToken);
-
-		byte[] secondaryTokenBytes = secondaryToken.getBytes();
-		Assertions.assertArrayEquals(bytes,secondaryTokenBytes);
-
-		//WhatsApp 4.1 specific
-		String secondaryTokenString = secondaryToken.getString();
-		Assertions.assertEquals("fs_time_spent",secondaryTokenString);
-
-		FunXMPP.SecondaryToken secondaryToken2 = (FunXMPP.SecondaryToken) FunXMPP.Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
-		Assertions.assertNotNull(secondaryToken2);
-
-		byte[] secondaryTokenBytes2 = secondaryToken2.getBytes();
-		Assertions.assertArrayEquals(bytes,secondaryTokenBytes2);
-
-		//WhatsApp 4.1 specific
-		String secondaryTokenString2 = secondaryToken2.getString();
-		Assertions.assertEquals("media.fsub1-1.fna.whatsapp.net",secondaryTokenString2);
-	}
+//	@Test
+//	public void testSecondaryTokenPage3(){
+//		byte tokenByte = (byte) 0xEE;
+//		byte secondaryTokenByte = 99;
+//		byte[] bytes = new byte[]{(byte) 0xEE,99};
+//
+//		FunXMPP.SecondaryToken secondaryToken = new FunXMPP.SecondaryToken(tokenByte,secondaryTokenByte);
+//		Assertions.assertNotNull(secondaryToken);
+//
+//		byte[] secondaryTokenBytes = secondaryToken.getBytes();
+//		Assertions.assertArrayEquals(bytes,secondaryTokenBytes);
+//
+//		//WhatsApp 4.1 specific
+//		String secondaryTokenString = secondaryToken.getString();
+//		Assertions.assertEquals("fs_time_spent",secondaryTokenString);
+//
+//		FunXMPP.SecondaryToken secondaryToken2 = (FunXMPP.SecondaryToken) FunXMPP.Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
+//		Assertions.assertNotNull(secondaryToken2);
+//
+//		byte[] secondaryTokenBytes2 = secondaryToken2.getBytes();
+//		Assertions.assertArrayEquals(bytes,secondaryTokenBytes2);
+//
+//		//WhatsApp 4.1 specific
+//		String secondaryTokenString2 = secondaryToken2.getString();
+//		Assertions.assertEquals("media.fsub1-1.fna.whatsapp.net",secondaryTokenString2);
+//	}
 
 	@Test
 	public void testShortListEmpty(){
