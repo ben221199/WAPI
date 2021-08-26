@@ -503,13 +503,13 @@ public class FunXMPP{
 		}
 
 		private static byte unpackByte(int value){
-			if(value < 0 || value > 15){
-				throw new RuntimeException("invalid hex to unpack: "+value);
+			if(value < 0 || value > 11){
+				throw new RuntimeException("invalid nibble to unpack: "+value);
 			}
 			if(value < 10){
 				return (byte) ('0'+value);
 			}else{
-				return (byte) ('A'+value-10);
+				return (byte) ('-'+value-10);
 			}
 		}
 
@@ -574,16 +574,14 @@ public class FunXMPP{
 		}
 
 		private static byte unpackByte(int value){
-			if(value >= 0 && value <= 9){
-				return (byte) ('0'+value);
-			}else if(value==10){
-				return '-';
-			}else if(value==11){
-				return '.';
-			}else if(value==15){
-				return 0;
+			if(value < 0 || value > 15){
+				throw new RuntimeException("invalid hex to unpack: "+value);
 			}
-			throw new RuntimeException("invalid nibble to unpack: " + value);
+			if(value < 10){
+				return (byte) ('0'+value);
+			}else{
+				return (byte) ('A'+value-10);
+			}
 		}
 
 		@Override
