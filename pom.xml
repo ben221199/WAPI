@@ -91,34 +91,25 @@
 	</properties>
 
 	<dependencies>
-		<!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
 		<dependency>
 			<groupId>com.google.protobuf</groupId>
 			<artifactId>protobuf-java</artifactId>
-			<version>3.14.0</version>
+			<version>3.17.3</version>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>com.github.rweather</groupId>-->
-<!--			<artifactId>noise-java</artifactId>-->
-<!--			<version>master-a8dce061f6-1</version>-->
-<!--		</dependency>-->
-		<!-- https://mvnrepository.com/artifact/org.json/json -->
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20201115</version>
+			<version>20210307</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.jsoup/jsoup -->
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
 			<version>1.14.2</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on -->
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.68</version>
+			<version>1.69</version>
 		</dependency>
 		<dependency>
 			<groupId>org.whispersystems</groupId>
@@ -128,24 +119,13 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.3.1</version>
+			<version>5.7.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.github.ben221199</groupId>
-			<artifactId>signal4j</artifactId>
-			<version>bbe289ebf0</version>
-		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>com.github.turakar</groupId>-->
-<!--			<artifactId>signal4j</artifactId>-->
-<!--			<version>1.0.0</version>-->
-<!--		</dependency>-->
-		<!-- https://mvnrepository.com/artifact/com.googlecode.libphonenumber/libphonenumber -->
-		<dependency>
 			<groupId>com.googlecode.libphonenumber</groupId>
 			<artifactId>libphonenumber</artifactId>
-			<version>8.12.28</version>
+			<version>8.12.31</version>
 		</dependency>
 
 	</dependencies>
