@@ -53,9 +53,9 @@ public class VerificationExample{
 ### Connection
 ```java
 import com.whatsapp.proto.WA4Protos;
-import nl.ben221199.wapi.Connection;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import nl.ben221199.wapi.Connection;
 
 public class ConnectionExample{
 
