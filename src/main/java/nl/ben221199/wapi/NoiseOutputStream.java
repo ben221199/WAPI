@@ -20,7 +20,7 @@ public class NoiseOutputStream extends SegmentOutputStream{
 	}
 
 	public void writeEncryptedSegment(byte[] plaintext) throws IOException {
-		byte[] cipherText = new byte[plaintext.length+8096];
+		byte[] cipherText = new byte[plaintext.length+1024];
 
 		int length = 0;
 		try{

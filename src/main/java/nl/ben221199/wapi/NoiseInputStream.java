@@ -21,12 +21,11 @@ public class NoiseInputStream extends SegmentInputStream{
 	}
 
 	public byte[] readDecryptedSegment() throws IOException{
-		byte[] plaintext = new byte[8096];
-
 		byte[] segment = this.readSegment();
 		if(segment==null){
 			return null;
 		}
+		byte[] plaintext = new byte[segment.length+1024];
 		int length = 0;
 		try{
 			length = this.cipherState.decryptWithAd(new byte[0],segment,0,plaintext,0,segment.length);
