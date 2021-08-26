@@ -565,9 +565,10 @@ public class FunXMPP{
 					continue;
 				}
 				ret[i*2] = PackedHex.unpackByte(firstNibble);
-				if(secondNibble>11){
-					continue;
-				}
+				//Disabled in packed hex
+//				if(secondNibble>11){
+//					continue;
+//				}
 				ret[i*2+1] = PackedHex.unpackByte(secondNibble);
 			}
 			if(ignoreLast){
