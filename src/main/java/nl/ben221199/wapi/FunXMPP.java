@@ -101,10 +101,14 @@ public class FunXMPP{
 					return new JabberId(Token.from(bb),Token.from(bb));
 				}
 				case 0xFB:{
-					byte startByte = bb.get();
-					byte[] buf = new byte[startByte & 0x7F];
+					int startByte = bb.get() & 0xFF;
+
+					boolean ignoreLast = startByte>=0x80;
+					int size = startByte & 0x7F;
+
+					byte[] buf = new byte[size];
 					bb.get(buf);
-					return new PackedHex(PackedHex.unpack(startByte,buf));
+					return new PackedHex(PackedHex.unpack(ignoreLast,size,buf));
 				}
 				case 0xFC:{
 					byte[] buf = new byte[bb.get() & 0xFF];
@@ -548,12 +552,12 @@ public class FunXMPP{
 			return baos.toByteArray();
 		}
 
-		public static byte[] unpack(byte startByte,byte[] packed){
-			if((startByte & 0x7F)==0){
+		public static byte[] unpack(boolean ignoreLast,int length,byte[] packed){
+			if(length==0){
 				return new byte[0];
 			}
-			byte[] ret = new byte[(startByte & 0x7F)*2];
-			for(int i=0;i<(startByte & 0x7F);i++){
+			byte[] ret = new byte[length*2];
+			for(int i=0;i<packed.length;i++){
 				byte currByte = packed[i];
 				byte firstNibble = (byte) ((currByte & 0xF0) >> 4);
 				byte secondNibble = (byte) (currByte & 0x0F);
@@ -566,10 +570,9 @@ public class FunXMPP{
 				}
 				ret[i*2+1] = PackedHex.unpackByte(secondNibble);
 			}
-			if((startByte >> 7)==0){
+			if(ignoreLast){
 				ret = Arrays.copyOfRange(ret,0,ret.length-1);
 			}
-//			System.out.println("H "+new String(ret));
 			return ret;
 		}
 
