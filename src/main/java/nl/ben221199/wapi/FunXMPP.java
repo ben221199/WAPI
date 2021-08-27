@@ -54,7 +54,7 @@ public class FunXMPP{
 			Node n = Node.from((AbstractList) t);
 			return n.getString();
 		}
-		return null;
+		return "";
 	}
 
 	public static byte[] encode(String xml){
