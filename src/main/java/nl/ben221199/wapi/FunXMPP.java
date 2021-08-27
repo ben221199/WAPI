@@ -108,7 +108,7 @@ public class FunXMPP{
 
 					byte[] buf = new byte[size];
 					bb.get(buf);
-					return new PackedHex(PackedHex.unpack(ignoreLast,size,buf));
+					return new PackedHex(PackedHex.unpack(buf,ignoreLast));
 				}
 				case 0xFC:{
 					byte[] buf = new byte[bb.get() & 0xFF];
@@ -128,12 +128,11 @@ public class FunXMPP{
 				case 0xFF:{
 					int startByte = bb.get() & 0xFF;
 
-					boolean ignoreLast = startByte>=0x80;
 					int size = startByte & 0x7F;
 
 					byte[] buf = new byte[size];
 					bb.get(buf);
-					return new PackedNibble(PackedNibble.unpack(ignoreLast,size,buf));
+					return new PackedNibble(PackedNibble.unpack(buf));
 				}
 				default:{
 					return new Token((byte) b);
@@ -460,7 +459,7 @@ public class FunXMPP{
 
 	}
 
-	private static class PackedNibble extends AbstractDataHolder{
+	public static class PackedNibble extends AbstractDataHolder{
 
 		public PackedNibble(){
 			super((byte) 0xFF);
@@ -482,11 +481,12 @@ public class FunXMPP{
 			return baos.toByteArray();
 		}
 
-		public static byte[] unpack(boolean ignoreLast,int length,byte[] packed){
-			if(length==0){
+		public static byte[] unpack(byte[] packed){
+			if(packed==null || packed.length==0){
 				return new byte[0];
 			}
-			byte[] ret = new byte[length*2];
+			byte[] ret = new byte[packed.length*2];
+			int digits = 0;
 			for(int i=0;i<packed.length;i++){
 				byte currByte = packed[i];
 				byte firstNibble = (byte) ((currByte & 0xF0) >> 4);
@@ -495,15 +495,14 @@ public class FunXMPP{
 					continue;
 				}
 				ret[i*2] = PackedNibble.unpackByte(firstNibble);
+				digits++;
 				if(secondNibble>11){
 					continue;
 				}
 				ret[i*2+1] = PackedNibble.unpackByte(secondNibble);
+				digits++;
 			}
-			if(ignoreLast){
-				ret = Arrays.copyOfRange(ret,0,ret.length-1);
-			}
-			return ret;
+			return Arrays.copyOfRange(ret,0,digits);
 		}
 
 		private static byte unpackByte(int value){
@@ -530,7 +529,7 @@ public class FunXMPP{
 
 	}
 
-	private static class PackedHex extends AbstractDataHolder{
+	public static class PackedHex extends AbstractDataHolder{
 
 		public PackedHex(){
 			super((byte) 0xFB);
@@ -552,23 +551,16 @@ public class FunXMPP{
 			return baos.toByteArray();
 		}
 
-		public static byte[] unpack(boolean ignoreLast,int length,byte[] packed){
-			if(length==0){
+		public static byte[] unpack(byte[] packed,boolean ignoreLast){
+			if(packed==null || packed.length==0){
 				return new byte[0];
 			}
-			byte[] ret = new byte[length*2];
+			byte[] ret = new byte[packed.length*2];
 			for(int i=0;i<packed.length;i++){
 				byte currByte = packed[i];
 				byte firstNibble = (byte) ((currByte & 0xF0) >> 4);
 				byte secondNibble = (byte) (currByte & 0x0F);
-				if(firstNibble>11){
-					continue;
-				}
 				ret[i*2] = PackedHex.unpackByte(firstNibble);
-				//Disabled in packed hex
-//				if(secondNibble>11){
-//					continue;
-//				}
 				ret[i*2+1] = PackedHex.unpackByte(secondNibble);
 			}
 			if(ignoreLast){

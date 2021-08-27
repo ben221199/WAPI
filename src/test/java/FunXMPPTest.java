@@ -17,6 +17,24 @@ public class FunXMPPTest{
 	}
 
 	@Test
+	public void testPackedHex(){
+		byte[] str = FunXMPP.PackedHex.unpack(new byte[]{(byte) 0xAA,(byte) 0xBB,(byte) 0xCC,(byte) 0xDD,(byte) 0xEE,(byte) 0xFF},false);
+		Assertions.assertEquals("AABBCCDDEEFF",new String(str));
+
+		byte[] str2 = FunXMPP.PackedHex.unpack(new byte[]{(byte) 0xAA,(byte) 0xBB,(byte) 0xCC,(byte) 0xDD,(byte) 0xEE,(byte) 0xFF},true);
+		Assertions.assertEquals("AABBCCDDEEF",new String(str2));
+	}
+
+	@Test
+	public void testPackedNibble(){
+		byte[] str = FunXMPP.PackedNibble.unpack(new byte[]{0x31,0x61,0x23,0x45,0x78,(byte) 0x90});
+		Assertions.assertEquals("316123457890",new String(str));
+
+		byte[] str2 = FunXMPP.PackedNibble.unpack(new byte[]{0x31,0x61,0x23,0x45,0x78,(byte) 0x90,0x5D});
+		Assertions.assertEquals("3161234578905",new String(str2));
+	}
+
+	@Test
 	public void testToken(){
 		byte tokenByte = 4;
 		byte[] bytes = new byte[]{4};
