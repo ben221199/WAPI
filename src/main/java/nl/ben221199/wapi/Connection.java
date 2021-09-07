@@ -4,6 +4,7 @@ import com.google.protobuf.ByteString;
 import com.southernstorm.noise.protocol.CipherStatePair;
 import com.southernstorm.noise.protocol.HandshakeState;
 import com.whatsapp.proto.WA4Protos;
+import nl.ben221199.wapi.fun.FunXMPP;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.ShortBufferException;
@@ -210,7 +211,7 @@ public class Connection{
 		this.handshake.setPrologue(WA,0,WA.length);
 		this.out.write(WA);
 		this.out.flush();
-		FunXMPP.setVersion(Constants.Protocol.MAJOR,Constants.Protocol.MINOR);
+		FunXMPP.setVersion(Constants.Protocol.FUN_VERSION);
 	}
 
 	public FunInputStream getInputStream(){

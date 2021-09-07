@@ -3,7 +3,18 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
-import nl.ben221199.wapi.FunXMPP;
+import nl.ben221199.wapi.fun.FunNode;
+import nl.ben221199.wapi.fun.FunVersion;
+import nl.ben221199.wapi.fun.FunXMPP;
+import nl.ben221199.wapi.fun.token.Int20LengthArrayString;
+import nl.ben221199.wapi.fun.token.Int31LengthArrayString;
+import nl.ben221199.wapi.fun.token.Int8LengthArrayString;
+import nl.ben221199.wapi.fun.token.JabberId;
+import nl.ben221199.wapi.fun.token.LongList;
+import nl.ben221199.wapi.fun.token.PackedHex;
+import nl.ben221199.wapi.fun.token.PackedNibble;
+import nl.ben221199.wapi.fun.token.ShortList;
+import nl.ben221199.wapi.fun.token.Token;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -13,24 +24,24 @@ public class FunXMPPTest{
 
 	@BeforeAll
 	public static void setVersion(){
-		FunXMPP.setVersion(4,1);
+		FunXMPP.setVersion(FunVersion.VERSION_4_1);
 	}
 
 	@Test
 	public void testPackedHex(){
-		byte[] str = FunXMPP.PackedHex.unpack(new byte[]{(byte) 0xAA,(byte) 0xBB,(byte) 0xCC,(byte) 0xDD,(byte) 0xEE,(byte) 0xFF},false);
+		byte[] str = PackedHex.unpack(new byte[]{(byte) 0xAA,(byte) 0xBB,(byte) 0xCC,(byte) 0xDD,(byte) 0xEE,(byte) 0xFF},false);
 		Assertions.assertEquals("AABBCCDDEEFF",new String(str));
 
-		byte[] str2 = FunXMPP.PackedHex.unpack(new byte[]{(byte) 0xAA,(byte) 0xBB,(byte) 0xCC,(byte) 0xDD,(byte) 0xEE,(byte) 0xFF},true);
+		byte[] str2 = PackedHex.unpack(new byte[]{(byte) 0xAA,(byte) 0xBB,(byte) 0xCC,(byte) 0xDD,(byte) 0xEE,(byte) 0xFF},true);
 		Assertions.assertEquals("AABBCCDDEEF",new String(str2));
 	}
 
 	@Test
 	public void testPackedNibble(){
-		byte[] str = FunXMPP.PackedNibble.unpack(new byte[]{0x31,0x61,0x23,0x45,0x78,(byte) 0x90});
+		byte[] str = PackedNibble.unpack(new byte[]{0x31,0x61,0x23,0x45,0x78,(byte) 0x90});
 		Assertions.assertEquals("316123457890",new String(str));
 
-		byte[] str2 = FunXMPP.PackedNibble.unpack(new byte[]{0x31,0x61,0x23,0x45,0x78,(byte) 0x90,0x5D});
+		byte[] str2 = PackedNibble.unpack(new byte[]{0x31,0x61,0x23,0x45,0x78,(byte) 0x90,0x5D});
 		Assertions.assertEquals("3161234578905",new String(str2));
 	}
 
@@ -39,7 +50,7 @@ public class FunXMPPTest{
 		byte tokenByte = 4;
 		byte[] bytes = new byte[]{4};
 
-		FunXMPP.Token token = new FunXMPP.Token(tokenByte);
+		Token token = new Token(tokenByte);
 		Assertions.assertNotNull(token);
 
 		byte[] tokenBytes = token.getBytes();
@@ -49,7 +60,7 @@ public class FunXMPPTest{
 		String tokenString = token.getString();
 		Assertions.assertEquals("id",tokenString);
 
-		FunXMPP.Token token2 = FunXMPP.Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
+		Token token2 = Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
 		Assertions.assertNotNull(token2);
 
 		byte[] tokenBytes2 = token2.getBytes();
@@ -66,7 +77,7 @@ public class FunXMPPTest{
 //		byte secondaryTokenByte = 16;
 //		byte[] bytes = new byte[]{(byte) 0xEC,16};
 //
-//		FunXMPP.SecondaryToken secondaryToken = new FunXMPP.SecondaryToken(tokenByte,secondaryTokenByte);
+//		SecondaryToken secondaryToken = new SecondaryToken(tokenByte,secondaryTokenByte);
 //		Assertions.assertNotNull(secondaryToken);
 //
 //		byte[] secondaryTokenBytes = secondaryToken.getBytes();
@@ -76,7 +87,7 @@ public class FunXMPPTest{
 //		String secondaryTokenString = secondaryToken.getString();
 //		Assertions.assertEquals("screen_height",secondaryTokenString);
 //
-//		FunXMPP.SecondaryToken secondaryToken2 = (FunXMPP.SecondaryToken) FunXMPP.Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
+//		SecondaryToken secondaryToken2 = (SecondaryToken) Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
 //		Assertions.assertNotNull(secondaryToken2);
 //
 //		byte[] secondaryTokenBytes2 = secondaryToken2.getBytes();
@@ -93,7 +104,7 @@ public class FunXMPPTest{
 //		byte secondaryTokenByte = 99;
 //		byte[] bytes = new byte[]{(byte) 0xEE,99};
 //
-//		FunXMPP.SecondaryToken secondaryToken = new FunXMPP.SecondaryToken(tokenByte,secondaryTokenByte);
+//		SecondaryToken secondaryToken = new SecondaryToken(tokenByte,secondaryTokenByte);
 //		Assertions.assertNotNull(secondaryToken);
 //
 //		byte[] secondaryTokenBytes = secondaryToken.getBytes();
@@ -103,7 +114,7 @@ public class FunXMPPTest{
 //		String secondaryTokenString = secondaryToken.getString();
 //		Assertions.assertEquals("fs_time_spent",secondaryTokenString);
 //
-//		FunXMPP.SecondaryToken secondaryToken2 = (FunXMPP.SecondaryToken) FunXMPP.Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
+//		SecondaryToken secondaryToken2 = (SecondaryToken) Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
 //		Assertions.assertNotNull(secondaryToken2);
 //
 //		byte[] secondaryTokenBytes2 = secondaryToken2.getBytes();
@@ -118,13 +129,13 @@ public class FunXMPPTest{
 	public void testShortListEmpty(){
 		byte[] bytes = new byte[]{(byte) 0xF8,0};
 
-		FunXMPP.ShortList shortList = new FunXMPP.ShortList();
+		ShortList shortList = new ShortList();
 		Assertions.assertNotNull(shortList);
 
 		byte[] shortListBytes = shortList.getBytes();
 		Assertions.assertArrayEquals(bytes,shortListBytes);
 
-		FunXMPP.ShortList shortList2 = (FunXMPP.ShortList) FunXMPP.Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
+		ShortList shortList2 = (ShortList) Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
 		Assertions.assertNotNull(shortList2);
 
 		byte[] shortListBytes2 = shortList2.getBytes();
@@ -133,20 +144,20 @@ public class FunXMPPTest{
 
 	@Test
 	public void testShortListNonEmpty(){
-		List<FunXMPP.Token> items = new ArrayList<>();
-		items.add(new FunXMPP.Token((byte) 1));
-		items.add(new FunXMPP.Token((byte) 3));
-		items.add(new FunXMPP.Token((byte) 5));
-		items.add(new FunXMPP.Token((byte) 7));
+		List<Token> items = new ArrayList<>();
+		items.add(new Token((byte) 1));
+		items.add(new Token((byte) 3));
+		items.add(new Token((byte) 5));
+		items.add(new Token((byte) 7));
 		byte[] bytes = new byte[]{(byte) 0xF8,4,1,3,5,7};
 
-		FunXMPP.ShortList shortList = new FunXMPP.ShortList(items);
+		ShortList shortList = new ShortList(items);
 		Assertions.assertNotNull(shortList);
 
 		byte[] shortListBytes = shortList.getBytes();
 		Assertions.assertArrayEquals(bytes,shortListBytes);
 
-		FunXMPP.ShortList shortList2 = (FunXMPP.ShortList) FunXMPP.Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
+		ShortList shortList2 = (ShortList) Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
 		Assertions.assertNotNull(shortList2);
 
 		byte[] shortListBytes2 = shortList2.getBytes();
@@ -157,13 +168,13 @@ public class FunXMPPTest{
 	public void testLongListEmpty(){
 		byte[] bytes = new byte[]{(byte) 0xF9,0,0};
 
-		FunXMPP.LongList longList = new FunXMPP.LongList();
+		LongList longList = new LongList();
 		Assertions.assertNotNull(longList);
 
 		byte[] longListBytes = longList.getBytes();
 		Assertions.assertArrayEquals(bytes,longListBytes);
 
-		FunXMPP.LongList longList2 = (FunXMPP.LongList) FunXMPP.Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
+		LongList longList2 = (LongList) Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
 		Assertions.assertNotNull(longList2);
 
 		byte[] longListBytes2 = longList2.getBytes();
@@ -172,20 +183,20 @@ public class FunXMPPTest{
 
 	@Test
 	public void testLongListNonEmpty(){
-		List<FunXMPP.Token> items = new ArrayList<>();
-		items.add(new FunXMPP.Token((byte) 7));
-		items.add(new FunXMPP.Token((byte) 5));
-		items.add(new FunXMPP.Token((byte) 3));
-		items.add(new FunXMPP.Token((byte) 1));
+		List<Token> items = new ArrayList<>();
+		items.add(new Token((byte) 7));
+		items.add(new Token((byte) 5));
+		items.add(new Token((byte) 3));
+		items.add(new Token((byte) 1));
 		byte[] bytes = new byte[]{(byte) 0xF9,0,4,7,5,3,1};
 
-		FunXMPP.LongList longList = new FunXMPP.LongList(items);
+		LongList longList = new LongList(items);
 		Assertions.assertNotNull(longList);
 
 		byte[] longListBytes = longList.getBytes();
 		Assertions.assertArrayEquals(bytes,longListBytes);
 
-		FunXMPP.LongList longList2 = (FunXMPP.LongList) FunXMPP.Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
+		LongList longList2 = (LongList) Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
 		Assertions.assertNotNull(longList2);
 
 		byte[] longListBytes2 = longList2.getBytes();
@@ -194,16 +205,16 @@ public class FunXMPPTest{
 
 	@Test
 	public void testJabberIdServer(){
-		FunXMPP.Token server = new FunXMPP.Token((byte) 5);
+		Token server = new Token((byte) 5);
 		byte[] bytes = new byte[]{(byte) 0xFA,0,5};
 
-		FunXMPP.JabberId jabberId = new FunXMPP.JabberId(server);
+		JabberId jabberId = new JabberId(server);
 		Assertions.assertNotNull(jabberId);
 
 		byte[] jabberIdBytes = jabberId.getBytes();
 		Assertions.assertArrayEquals(bytes,jabberIdBytes);
 
-		FunXMPP.JabberId jabberId2 = (FunXMPP.JabberId) FunXMPP.Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
+		JabberId jabberId2 = (JabberId) Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
 		Assertions.assertNotNull(jabberId2);
 
 		byte[] jabberIdBytes2 = jabberId2.getBytes();
@@ -212,17 +223,17 @@ public class FunXMPPTest{
 
 	@Test
 	public void testJabberIdUserAndServer(){
-		FunXMPP.Token user = new FunXMPP.Token((byte) 7);
-		FunXMPP.Token server = new FunXMPP.Token((byte) 3);
+		Token user = new Token((byte) 7);
+		Token server = new Token((byte) 3);
 		byte[] bytes = new byte[]{(byte) 0xFA,7,3};
 
-		FunXMPP.JabberId jabberId = new FunXMPP.JabberId(user,server);
+		JabberId jabberId = new JabberId(user,server);
 		Assertions.assertNotNull(jabberId);
 
 		byte[] jabberIdBytes = jabberId.getBytes();
 		Assertions.assertArrayEquals(bytes,jabberIdBytes);
 
-		FunXMPP.JabberId jabberId2 = (FunXMPP.JabberId) FunXMPP.Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
+		JabberId jabberId2 = (JabberId) Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
 		Assertions.assertNotNull(jabberId2);
 
 		byte[] jabberIdBytes2 = jabberId2.getBytes();
@@ -237,13 +248,13 @@ public class FunXMPPTest{
 		byte[] data = "Hello world 8".getBytes();
 		byte[] bytes = new byte[]{(byte) 0xFC,13,'H','e','l','l','o',' ','w','o','r','l','d',' ','8'};
 
-		FunXMPP.Int8LengthArrayString int8LengthArrayString = new FunXMPP.Int8LengthArrayString(data);
+		Int8LengthArrayString int8LengthArrayString = new Int8LengthArrayString(data);
 		Assertions.assertNotNull(int8LengthArrayString);
 
 		byte[] int8LengthArrayStringBytes = int8LengthArrayString.getBytes();
 		Assertions.assertArrayEquals(bytes,int8LengthArrayStringBytes);
 
-		FunXMPP.Int8LengthArrayString int8LengthArrayString2 = (FunXMPP.Int8LengthArrayString) FunXMPP.Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
+		Int8LengthArrayString int8LengthArrayString2 = (Int8LengthArrayString) Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
 		Assertions.assertNotNull(int8LengthArrayString2);
 
 		byte[] int8LengthArrayStringBytes2 = int8LengthArrayString2.getBytes();
@@ -255,13 +266,13 @@ public class FunXMPPTest{
 		byte[] data = "Hello world 20".getBytes();
 		byte[] bytes = new byte[]{(byte) 0xFD,0,0,14,'H','e','l','l','o',' ','w','o','r','l','d',' ','2','0'};
 
-		FunXMPP.Int20LengthArrayString int20LengthArrayString = new FunXMPP.Int20LengthArrayString(data);
+		Int20LengthArrayString int20LengthArrayString = new Int20LengthArrayString(data);
 		Assertions.assertNotNull(int20LengthArrayString);
 
 		byte[] int20LengthArrayStringBytes = int20LengthArrayString.getBytes();
 		Assertions.assertArrayEquals(bytes,int20LengthArrayStringBytes);
 
-		FunXMPP.Int20LengthArrayString int20LengthArrayString2 = (FunXMPP.Int20LengthArrayString) FunXMPP.Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
+		Int20LengthArrayString int20LengthArrayString2 = (Int20LengthArrayString) Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
 		Assertions.assertNotNull(int20LengthArrayString2);
 
 		byte[] int20LengthArrayStringBytes2 = int20LengthArrayString2.getBytes();
@@ -273,13 +284,13 @@ public class FunXMPPTest{
 		byte[] data = "Hello world 31".getBytes();
 		byte[] bytes = new byte[]{(byte) 0xFE,0,0,0,14,'H','e','l','l','o',' ','w','o','r','l','d',' ','3','1'};
 
-		FunXMPP.Int31LengthArrayString int31LengthArrayString = new FunXMPP.Int31LengthArrayString(data);
+		Int31LengthArrayString int31LengthArrayString = new Int31LengthArrayString(data);
 		Assertions.assertNotNull(int31LengthArrayString);
 
 		byte[] int31LengthArrayStringBytes = int31LengthArrayString.getBytes();
 		Assertions.assertArrayEquals(bytes,int31LengthArrayStringBytes);
 
-		FunXMPP.Int31LengthArrayString int31LengthArrayString2 = (FunXMPP.Int31LengthArrayString) FunXMPP.Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
+		Int31LengthArrayString int31LengthArrayString2 = (Int31LengthArrayString) Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
 		Assertions.assertNotNull(int31LengthArrayString2);
 
 		byte[] int31LengthArrayStringBytes2 = int31LengthArrayString2.getBytes();
@@ -290,30 +301,30 @@ public class FunXMPPTest{
 
 	@Test
 	public void testNodeStart(){
-		Assertions.assertEquals(FunXMPP.Node.XMLSTREAMSTART,FunXMPP.Node.start().getString());
-		Assertions.assertEquals(FunXMPP.Node.XMLSTREAMSTART,FunXMPP.Node.from(FunXMPP.Node.XMLSTREAMSTART).getString());
+		Assertions.assertEquals(FunNode.XMLSTREAMSTART,FunNode.START.toXML());
+		Assertions.assertEquals(FunNode.XMLSTREAMSTART,FunNode.fromXML(FunNode.XMLSTREAMSTART).toXML());
 	}
 
 	@Test
 	public void testNodeEnd(){
-		Assertions.assertEquals(FunXMPP.Node.XMLSTREAMEND,FunXMPP.Node.end().getString());
-		Assertions.assertEquals(FunXMPP.Node.XMLSTREAMEND,FunXMPP.Node.from(FunXMPP.Node.XMLSTREAMEND).getString());
+		Assertions.assertEquals(FunNode.XMLSTREAMEND,FunNode.END.toXML());
+		Assertions.assertEquals(FunNode.XMLSTREAMEND,FunNode.fromXML(FunNode.XMLSTREAMEND).toXML());
 	}
 
 //	@Test
 //	public void testNode(){
-//		FunXMPP.Node.
+//		FunNode.
 //
 //		byte[] data = "Hello world 31".getBytes();
 //		byte[] bytes = new byte[]{(byte) 0xFE,0,0,0,14,'H','e','l','l','o',' ','w','o','r','l','d',' ','3','1'};
 //
-//		FunXMPP.Int31LengthArrayString int31LengthArrayString = new FunXMPP.Int31LengthArrayString(data);
+//		Int31LengthArrayString int31LengthArrayString = new Int31LengthArrayString(data);
 //		Assertions.assertNotNull(int31LengthArrayString);
 //
 //		byte[] int31LengthArrayStringBytes = int31LengthArrayString.getBytes();
 //		Assertions.assertArrayEquals(bytes,int31LengthArrayStringBytes);
 //
-//		FunXMPP.Int31LengthArrayString int31LengthArrayString2 = (FunXMPP.Int31LengthArrayString) FunXMPP.Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
+//		Int31LengthArrayString int31LengthArrayString2 = (Int31LengthArrayString) Token.from(ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN));
 //		Assertions.assertNotNull(int31LengthArrayString2);
 //
 //		byte[] int31LengthArrayStringBytes2 = int31LengthArrayString2.getBytes();

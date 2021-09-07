@@ -1,5 +1,7 @@
 package nl.ben221199.wapi;
 
+import nl.ben221199.wapi.fun.FunVersion;
+
 public class Constants{
 
 	public static class Device{
@@ -30,6 +32,8 @@ public class Constants{
 		public static final int MAJOR = 0x04;
 
 		public static final int MINOR = 0x01;
+
+		public static final FunVersion FUN_VERSION = FunVersion.VERSION_4_1;
 
 	}
 
