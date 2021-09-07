@@ -162,7 +162,7 @@ public class FunNode{
 			element.setAttribute(attr.getKey().getString(),attr.getValue().getString());
 		}
 		for(FunNode child : this.children){
-			element.appendChild(child.toElement());
+			element.appendChild(child.toElement(document));
 		}
 		if(this.data!=null){
 			element.setTextContent(Base64.encode(this.data));
