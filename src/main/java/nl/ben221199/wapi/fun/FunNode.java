@@ -153,7 +153,7 @@ public class FunNode{
 
 
 	public Element toElement(){
-		this.toElement(FunXMPP.getBuilder().newDocument());
+		return this.toElement(FunXMPP.getBuilder().newDocument());
 	}
 
 	private Element toElement(Document document){
