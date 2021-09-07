@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -150,8 +151,13 @@ public class FunNode{
 		return null;
 	}
 
+
 	public Element toElement(){
-		Element element = FunXMPP.getBuilder().newDocument().createElement(this.tag.getString());
+		this.toElement(FunXMPP.getBuilder().newDocument());
+	}
+
+	private Element toElement(Document document){
+		Element element = document.createElement(this.tag.getString());
 		for(FunAttribute attr : this.attributes){
 			element.setAttribute(attr.getKey().getString(),attr.getValue().getString());
 		}
