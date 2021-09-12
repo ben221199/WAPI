@@ -158,7 +158,7 @@ public class JSONSignalStore implements SignalProtocolStore{
 		if(this.signedPreKeys.containsKey(i)){
 			return this.signedPreKeys.get(i);
 		}
-		throw new InvalidKeyIdException("SignedPreKey doesn't exist");
+		throw new InvalidKeyIdException("SignedPreKey on index '"+i+"' doesn't exist.");
 	}
 
 	@Override
