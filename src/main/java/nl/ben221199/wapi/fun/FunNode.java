@@ -2,7 +2,6 @@ package nl.ben221199.wapi.fun;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,8 +18,6 @@ import nl.ben221199.wapi.fun.token.Int31LengthArrayString;
 import nl.ben221199.wapi.fun.token.Int8LengthArrayString;
 import nl.ben221199.wapi.fun.token.JabberId;
 import nl.ben221199.wapi.fun.token.LongList;
-import nl.ben221199.wapi.fun.token.PackedHex;
-import nl.ben221199.wapi.fun.token.PackedNibble;
 import nl.ben221199.wapi.fun.token.SecondaryToken;
 import nl.ben221199.wapi.fun.token.ShortList;
 import nl.ben221199.wapi.fun.token.Token;
@@ -232,16 +229,16 @@ public class FunNode{
 
 	private static Token writeBytesHelper(byte[] bytes){
 		String s = new String(bytes);
-		try{
-			new BigInteger(s);
-			return new PackedNibble(bytes);
-		}catch(NumberFormatException ignored){
-		}
-		try{
-			new BigInteger(s,16);
-			return new PackedHex(bytes);
-		}catch(NumberFormatException ignored){
-		}
+//		try{
+//			new BigInteger(s);
+//			return new PackedNibble(bytes);
+//		}catch(NumberFormatException ignored){
+//		}
+//		try{
+//			new BigInteger(s,16);
+//			return new PackedHex(bytes);
+//		}catch(NumberFormatException ignored){
+//		}
 		if(bytes.length<=255L){
 			return new Int8LengthArrayString(bytes);
 		}

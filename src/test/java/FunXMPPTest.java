@@ -34,6 +34,12 @@ public class FunXMPPTest{
 
 		byte[] str2 = PackedHex.unpack(new byte[]{(byte) 0xAA,(byte) 0xBB,(byte) 0xCC,(byte) 0xDD,(byte) 0xEE,(byte) 0xFF},true);
 		Assertions.assertEquals("AABBCCDDEEF",new String(str2));
+
+		byte[] ba = PackedHex.pack("AABBCCDDEEFF".getBytes());
+		Assertions.assertArrayEquals(new byte[]{6,(byte) 0xAA,(byte) 0xBB,(byte) 0xCC,(byte) 0xDD,(byte) 0xEE,(byte) 0xFF},ba);
+
+		byte[] ba2 = PackedHex.pack("AABBCCDDEEF".getBytes());
+		Assertions.assertArrayEquals(new byte[]{(byte) (6 | 0x80),(byte) 0xAA,(byte) 0xBB,(byte) 0xCC,(byte) 0xDD,(byte) 0xEE,(byte) 0xFF},ba2);
 	}
 
 	@Test
@@ -43,6 +49,12 @@ public class FunXMPPTest{
 
 		byte[] str2 = PackedNibble.unpack(new byte[]{0x31,0x61,0x23,0x45,0x78,(byte) 0x90,0x5D});
 		Assertions.assertEquals("3161234578905",new String(str2));
+
+		byte[] ba = PackedNibble.pack("316123457890".getBytes());
+		Assertions.assertArrayEquals(new byte[]{6,0x31,0x61,0x23,0x45,0x78,(byte) 0x90},ba);
+
+		byte[] ba2 = PackedNibble.pack("3161234578905".getBytes());
+		Assertions.assertArrayEquals(new byte[]{7,0x31,0x61,0x23,0x45,0x78,(byte) 0x90,0x5F},ba2);
 	}
 
 	@Test
