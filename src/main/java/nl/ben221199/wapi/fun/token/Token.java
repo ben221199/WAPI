@@ -1,8 +1,8 @@
 package nl.ben221199.wapi.fun.token;
 
-import nl.ben221199.wapi.fun.FunXMPP;
-
 import java.nio.ByteBuffer;
+
+import nl.ben221199.wapi.fun.FunXMPP;
 
 public class Token{
 

@@ -1,11 +1,10 @@
 package nl.ben221199.wapi.fun.token;
 
-import nl.ben221199.wapi.Base64;
-import nl.ben221199.wapi.fun.FunXMPP;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+
+import nl.ben221199.wapi.Base64;
 
 public class PackedHex extends AbstractDataHolder{
 

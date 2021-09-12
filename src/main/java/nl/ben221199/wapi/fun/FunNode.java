@@ -1,5 +1,16 @@
 package nl.ben221199.wapi.fun;
 
+import java.io.ByteArrayInputStream;
+import java.io.StringWriter;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
 import nl.ben221199.wapi.Base64;
 import nl.ben221199.wapi.fun.token.AbstractDataHolder;
 import nl.ben221199.wapi.fun.token.AbstractList;
@@ -8,24 +19,16 @@ import nl.ben221199.wapi.fun.token.Int31LengthArrayString;
 import nl.ben221199.wapi.fun.token.Int8LengthArrayString;
 import nl.ben221199.wapi.fun.token.JabberId;
 import nl.ben221199.wapi.fun.token.LongList;
+import nl.ben221199.wapi.fun.token.PackedHex;
+import nl.ben221199.wapi.fun.token.PackedNibble;
 import nl.ben221199.wapi.fun.token.SecondaryToken;
 import nl.ben221199.wapi.fun.token.ShortList;
 import nl.ben221199.wapi.fun.token.Token;
-
-import java.io.ByteArrayInputStream;
-import java.io.StringWriter;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 public class FunNode{
 
@@ -228,6 +231,17 @@ public class FunNode{
 	}
 
 	private static Token writeBytesHelper(byte[] bytes){
+		String s = new String(bytes);
+		try{
+			new BigInteger(s);
+			return new PackedNibble(bytes);
+		}catch(NumberFormatException ignored){
+		}
+		try{
+			new BigInteger(s,16);
+			return new PackedHex(bytes);
+		}catch(NumberFormatException ignored){
+		}
 		if(bytes.length<=255L){
 			return new Int8LengthArrayString(bytes);
 		}

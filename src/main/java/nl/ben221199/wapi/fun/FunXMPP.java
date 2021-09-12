@@ -1,12 +1,12 @@
 package nl.ben221199.wapi.fun;
 
-import nl.ben221199.wapi.protocol.WA02;
-import nl.ben221199.wapi.protocol.WA41;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
+
+import nl.ben221199.wapi.protocol.WA02;
+import nl.ben221199.wapi.protocol.WA41;
 
 import org.w3c.dom.Element;
 
