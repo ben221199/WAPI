@@ -23,7 +23,8 @@ public class PackedHex extends AbstractDataHolder{
 	public byte[] getBytes(){
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try{
-			baos.write(new byte[]{this.token,(byte) 0x00});
+			baos.write(new byte[]{this.token});
+			baos.write(PackedHex.pack(this.data));
 			baos.flush();
 		}
 		catch(IOException ignored){}

@@ -23,7 +23,8 @@ public class PackedNibble extends AbstractDataHolder{
 	public byte[] getBytes(){
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try{
-			baos.write(new byte[]{this.token,(byte) 0x00});
+			baos.write(new byte[]{this.token});
+			baos.write(PackedNibble.pack(this.data));
 			baos.flush();
 		}
 		catch(IOException ignored){}
