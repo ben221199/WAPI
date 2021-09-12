@@ -2,9 +2,11 @@ package nl.ben221199.wapi.fun.token;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import nl.ben221199.wapi.Base64;
+import nl.ben221199.wapi.Hex;
 
 public class PackedNibble extends AbstractDataHolder{
 
@@ -26,6 +28,17 @@ public class PackedNibble extends AbstractDataHolder{
 		}
 		catch(IOException ignored){}
 		return baos.toByteArray();
+	}
+
+	public static byte[] pack(byte[] unpacked){
+		boolean ignoreLast = unpacked.length%2==1;
+		String hex = new String(unpacked);
+		if(ignoreLast){
+			hex += "F";
+		}
+		byte[] data = Hex.toBytes(hex);
+		byte startByte = (byte) (data.length & 0x7F);
+		return ByteBuffer.allocate(1+data.length).put(startByte).put(data).array();
 	}
 
 	public static byte[] unpack(byte[] packed){
