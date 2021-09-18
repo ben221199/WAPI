@@ -14,7 +14,6 @@ import java.util.Arrays;
 
 import org.json.JSONObject;
 import org.whispersystems.libsignal.ecc.Curve;
-import org.whispersystems.libsignal.ecc.DjbECPublicKey;
 import org.whispersystems.libsignal.ecc.ECKeyPair;
 import org.whispersystems.libsignal.ecc.ECPrivateKey;
 import org.whispersystems.libsignal.ecc.ECPublicKey;
