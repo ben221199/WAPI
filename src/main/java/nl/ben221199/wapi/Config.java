@@ -7,12 +7,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 import org.json.JSONObject;
 import org.whispersystems.libsignal.ecc.Curve;
+import org.whispersystems.libsignal.ecc.DjbECPublicKey;
 import org.whispersystems.libsignal.ecc.ECKeyPair;
 import org.whispersystems.libsignal.ecc.ECPrivateKey;
 import org.whispersystems.libsignal.ecc.ECPublicKey;
@@ -69,7 +71,7 @@ public class Config{
 		byte[] keypairBytes = Base64.decode(this.getString("client_static_keypair"));
 
 		try{
-			ECPublicKey pub = Curve.decodePoint(Arrays.copyOfRange(keypairBytes,0,32),0);
+			ECPublicKey pub = Curve.decodePoint(ByteBuffer.allocate(ECPublicKey.KEY_SIZE).put((byte)Curve.DJB_TYPE).put(Arrays.copyOfRange(keypairBytes,0,32)).array(),0);
 			ECPrivateKey priv = Curve.decodePrivatePoint(Arrays.copyOfRange(keypairBytes,32,64));
 
 			return new ECKeyPair(pub,priv).getKeyPair();
@@ -464,7 +466,7 @@ public class Config{
 			client_static_keypair.getPrivateKey(private_key_bytes,0);
 
 			try{
-				ECPublicKey pub = Curve.decodePoint(Arrays.copyOfRange(public_key_bytes,0,32),0);
+				ECPublicKey pub = Curve.decodePoint(ByteBuffer.allocate(ECPublicKey.KEY_SIZE).put((byte)Curve.DJB_TYPE).put(Arrays.copyOfRange(public_key_bytes,0,32)).array(),0);
 				ECPrivateKey priv = Curve.decodePrivatePoint(Arrays.copyOfRange(private_key_bytes,32,64));
 
 				return new ECKeyPair(pub,priv).getKeyPair();
