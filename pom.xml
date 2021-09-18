@@ -79,11 +79,11 @@
 			<artifactId>protobuf-java</artifactId>
 			<version>3.17.3</version>
 		</dependency>
-		<dependency>
-			<groupId>com.github.ben221199</groupId>
-			<artifactId>noise-java</artifactId>
-			<version>master</version>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>com.github.ben221199</groupId>-->
+<!--			<artifactId>noise-java</artifactId>-->
+<!--			<version>master</version>-->
+<!--		</dependency>-->
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
