@@ -1,8 +1,5 @@
 package nl.ben221199.wapi;
 
-import br.eti.balena.security.ecdh.curve25519.Curve25519PrivateKey;
-import br.eti.balena.security.ecdh.curve25519.Curve25519PublicKey;
-
 import com.southernstorm.noise.protocol.DHState;
 import com.southernstorm.noise.protocol.Noise;
 
@@ -10,11 +7,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 import org.json.JSONObject;
+import org.whispersystems.libsignal.ecc.Curve;
+import org.whispersystems.libsignal.ecc.DjbECPrivateKey;
+import org.whispersystems.libsignal.ecc.DjbECPublicKey;
+import org.whispersystems.libsignal.ecc.ECKeyPair;
+import org.whispersystems.libsignal.ecc.ECPrivateKey;
+import org.whispersystems.libsignal.ecc.ECPublicKey;
 
 public class Config{
 
@@ -64,14 +66,23 @@ public class Config{
 		this.data.put(key,value);
 	}
 
-	public KeyPair getClientStaticKeypair(){
+	public ECKeyPair getClientStaticKeypair(){
 		byte[] keypairBytes = Base64.decode(this.getString("client_static_keypair"));
-		return new KeyPair(new Curve25519PublicKey(Arrays.copyOfRange(keypairBytes,0,32)),new Curve25519PrivateKey(Arrays.copyOfRange(keypairBytes,32,64)));
+
+		try{
+			ECPublicKey pub = Curve.decodePoint(Arrays.copyOfRange(keypairBytes,0,32),0);
+			ECPrivateKey priv = Curve.decodePrivatePoint(Arrays.copyOfRange(keypairBytes,32,64));
+
+			return new ECKeyPair(pub,priv);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
 	}
 
-	public void setClientStaticKeypair(KeyPair keypair){
-		byte[] pub = keypair.getPublic().getEncoded();
-		byte[] priv = keypair.getPrivate().getEncoded();
+	public void setClientStaticKeypair(ECKeyPair keypair){
+		byte[] pub = ((DjbECPublicKey) keypair.getPublicKey()).getPublicKey();
+		byte[] priv = ((DjbECPrivateKey) keypair.getPrivateKey()).getPrivateKey();
 
 		byte[] keypairBytes = new byte[pub.length+priv.length];
 		System.arraycopy(pub,0,keypairBytes,0,pub.length);
@@ -445,14 +456,23 @@ public class Config{
 
 	public static class Tools{
 
-		public static KeyPair generateClientStaticKeyPair() throws NoSuchAlgorithmException{
+		public static ECKeyPair generateClientStaticKeyPair() throws NoSuchAlgorithmException{
 			DHState client_static_keypair = Noise.createDH("25519");
 			client_static_keypair.generateKeyPair();
 			byte[] public_key_bytes = new byte[client_static_keypair.getPublicKeyLength()];
 			client_static_keypair.getPublicKey(public_key_bytes,0);
 			byte[] private_key_bytes = new byte[client_static_keypair.getPrivateKeyLength()];
 			client_static_keypair.getPrivateKey(private_key_bytes,0);
-			return new KeyPair(new Curve25519PublicKey(public_key_bytes),new Curve25519PrivateKey(private_key_bytes));
+
+			try{
+				ECPublicKey pub = Curve.decodePoint(Arrays.copyOfRange(public_key_bytes,0,32),0);
+				ECPrivateKey priv = Curve.decodePrivatePoint(Arrays.copyOfRange(private_key_bytes,32,64));
+
+				return new ECKeyPair(pub,priv);
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			return null;
 		}
 
 	}
