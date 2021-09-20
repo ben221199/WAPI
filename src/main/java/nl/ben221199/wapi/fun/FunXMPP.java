@@ -8,6 +8,7 @@ import javax.xml.transform.TransformerFactory;
 import nl.ben221199.wapi.protocol.WA02;
 import nl.ben221199.wapi.protocol.WA41;
 
+import nl.ben221199.wapi.protocol.WA42;
 import org.w3c.dom.Element;
 
 public class FunXMPP{
@@ -51,6 +52,7 @@ public class FunXMPP{
 			case VERSION_0_2:return WA02.getDictionary();
 //			case VERSION_4_0:return WA40.getDictionary();
 			case VERSION_4_1:return WA41.getDictionary();
+			case VERSION_4_2:return WA42.getDictionary();
 		}
 		return null;
 	}
@@ -60,6 +62,7 @@ public class FunXMPP{
 			case VERSION_0_2:return WA02.getSecondaryDictionary();
 //			case VERSION_4_0:return WA40.getSecondaryDictionary();
 			case VERSION_4_1:return WA41.getSecondaryDictionary();
+			case VERSION_4_2:return WA42.getSecondaryDictionary();
 		}
 		return null;
 	}
