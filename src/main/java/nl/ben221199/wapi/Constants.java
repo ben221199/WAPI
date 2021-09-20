@@ -29,11 +29,11 @@ public class Constants{
 
 		public static final int EDGE_MINOR = 0x01;
 
-		public static final int MAJOR = 0x04;
+		public static final int MAJOR = 0x05;
 
-		public static final int MINOR = 0x02;
+		public static final int MINOR = 0x00;
 
-		public static final FunVersion FUN_VERSION = FunVersion.VERSION_4_2;
+		public static final FunVersion FUN_VERSION = FunVersion.VERSION_5_0;
 
 	}
 
