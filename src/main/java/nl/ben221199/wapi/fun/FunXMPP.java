@@ -10,6 +10,7 @@ import nl.ben221199.wapi.protocol.WA41;
 
 import nl.ben221199.wapi.protocol.WA42;
 import nl.ben221199.wapi.protocol.WA50;
+import nl.ben221199.wapi.protocol.WA52;
 import org.w3c.dom.Element;
 
 public class FunXMPP{
@@ -55,6 +56,7 @@ public class FunXMPP{
 			case VERSION_4_1:return WA41.getDictionary();
 			case VERSION_4_2:return WA42.getDictionary();
 			case VERSION_5_0:return WA50.getDictionary();
+			case VERSION_5_2:return WA52.getDictionary();
 		}
 		return null;
 	}
@@ -66,6 +68,7 @@ public class FunXMPP{
 			case VERSION_4_1:return WA41.getSecondaryDictionary();
 			case VERSION_4_2:return WA42.getSecondaryDictionary();
 			case VERSION_5_0:return WA50.getSecondaryDictionary();
+			case VERSION_5_2:return WA52.getSecondaryDictionary();
 		}
 		return null;
 	}

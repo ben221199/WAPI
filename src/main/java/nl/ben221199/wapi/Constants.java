@@ -33,7 +33,7 @@ public class Constants{
 
 		public static final int MINOR = 0x00;
 
-		public static final FunVersion FUN_VERSION = FunVersion.VERSION_5_0;
+		public static final FunVersion FUN_VERSION = FunVersion.VERSION_5_2;
 
 	}
 
