@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project
-	xmlns="http://maven.apache.org/POM/4.0.0">
-	
+		xmlns="http://maven.apache.org/POM/4.0.0">
+
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>nl.ben221199</groupId>
 	<artifactId>wapi</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -79,11 +79,18 @@
 			<artifactId>protobuf-java</artifactId>
 			<version>3.19.6</version>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>com.github.ben221199</groupId>-->
-<!--			<artifactId>noise-java</artifactId>-->
-<!--			<version>master</version>-->
-<!--		</dependency>-->
+		<!--		<dependency>-->
+		<!--			<groupId>com.github.ben221199</groupId>-->
+		<!--			<artifactId>noise-java</artifactId>-->
+		<!--			<version>master</version>-->
+		<!--		</dependency>-->
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>5.3.1</version>
+			<scope>test</scope>
+		</dependency>
+
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
