@@ -1,7 +1,6 @@
 import nl.ben221199.wapi.JSONSignalStore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.whispersystems.libsignal.*;
 import org.whispersystems.libsignal.state.IdentityKeyStore;
 import org.whispersystems.libsignal.ecc.ECPublicKey;

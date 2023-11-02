@@ -2,7 +2,6 @@
 import nl.ben221199.wapi.SegmentInputStream;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
@@ -52,28 +51,4 @@ public class SegmentInputStreamTest {
 
     }
 
-    private static class ByteArrayInputStream extends InputStream {
-        private byte[] data;
-        private int position;
-        private int readCount;
-
-        ByteArrayInputStream(byte[] data) {
-            this.data = data;
-            this.position = 0;
-            this.readCount = 0;
-        }
-
-        @Override
-        public int read() {
-            if (position >= data.length) {
-                return -1;
-            }
-            readCount++;
-            return data[position++] & 0xFF;
-        }
-
-        public int getReadCount() {
-            return readCount;
-        }
-    }
 }
