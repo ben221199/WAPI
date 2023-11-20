@@ -112,16 +112,11 @@ public class Verification{
 	 * @param platform Platform
 	 * @return Token
 	 */
-	public static String calculateToken(String internalNumber,Verification.Platform platform){
-		switch(platform){
-			case ANDROID:{
-				return Verification.calculateAndroidToken(internalNumber);
-			}
-			case NOKIA:{
-				return Verification.calculateNokiaToken(internalNumber);
-			}
-		}
-		return null;
+
+
+	public static String calculateToken(String internalNumber, Verification.Platform platform) {
+		TokenCalculator tokenCalculator = TokenCalculatorFactory.getCalculator(platform);
+		return tokenCalculator.calculateToken(internalNumber);
 	}
 
 	/**

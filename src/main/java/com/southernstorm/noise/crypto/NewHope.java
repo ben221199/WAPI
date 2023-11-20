@@ -29,6 +29,15 @@ public class NewHope {
 	static final int SEEDBYTES = 32;
 	static final int RECBYTES = 256;
 
+	private static final int PARAM_R = 2730;
+	private static final int PARAM_LOG2_Q = 25;
+	private static final int PARAM_Q_MINUS_ONE = 12288;
+	private static final int PARAM_Q_SHIFT = 31;
+	private static final int PARAM_LOG2_4Q = 27;
+	private static final int PARAM_4Q = 49156;
+	private static final int PARAM_4Q_MINUS_ONE = 49155;
+	private static final int PARAM_4Q_SHIFT = 31;
+
 	/**
 	 * Number of bytes in the public key value sent by Alice.
 	 */
@@ -535,58 +544,74 @@ public class NewHope {
 	  int mask = v >> 31;
 	  return (v ^ mask) - mask;
 	}
+	private static int calculateFAndRound(int[] resultArray, int resultOffset, int[] v1Array, int v1Offset, int inputValue) {
+		int quotient, remainder, borrow;
 
-	private static int f(int[] v0, int v0offset, int[] v1, int v1offset, int x)
-	{
-	  int xit, t, r, b;
+		// Compute quotient = inputValue / PARAM_Q;
+		borrow = inputValue * PARAM_R;
+		quotient = borrow >> PARAM_LOG2_Q;
+		borrow = inputValue - quotient * PARAM_Q;
+		borrow = PARAM_Q_MINUS_ONE - borrow;
+		borrow >>= PARAM_Q_SHIFT;
+		quotient -= borrow;
 
-	  // Next 6 lines compute t = x/PARAM_Q;
-	  b = x*2730;
-	  t = b >> 25;
-	  b = x - t*12289;
-	  b = 12288 - b;
-	  b >>= 31;
-	  t -= b;
+		remainder = quotient & 1;
+		int roundedQuotient = (quotient >> 1) + remainder;
+		resultArray[resultOffset] = roundedQuotient; // resultArray = round(inputValue / (2 * PARAM_Q))
 
-	  r = t & 1;
-	  xit = (t>>1);
-	  v0[v0offset] = xit+r; // v0 = round(x/(2*PARAM_Q))
+		quotient -= 1;
+		remainder = quotient & 1;
+		v1Array[v1Offset] = (quotient >> 1) + remainder;
 
-	  t -= 1;
-	  r = t & 1;
-	  v1[v1offset] = (t>>1)+r;
-
-	  return abs(x-((v0[v0offset])*2*PARAM_Q));
+		return Math.abs(inputValue - (roundedQuotient * 2 * PARAM_Q));
 	}
 
-	private static int g(int x)
-	{
-	  int t,c,b;
+//	private static int g(int x)
+//	{
+//	  int t,c,b;
+//
+//	  // Next 6 lines compute t = x/(4*PARAM_Q);
+//	  b = x*2730;
+//	  t = b >> 27;
+//	  b = x - t*49156;
+//	  b = 49155 - b;
+//	  b >>= 31;
+//	  t -= b;
+//
+//	  c = t & 1;
+//	  t = (t >> 1) + c; // t = round(x/(8*PARAM_Q))
+//
+//	  t *= 8*PARAM_Q;
+//
+//	  return abs(t - x);
+//	}
+private static int calculateGAndRound(int inputValue) {
+	int quotient, carry, borrow;
 
-	  // Next 6 lines compute t = x/(4*PARAM_Q);
-	  b = x*2730;
-	  t = b >> 27;
-	  b = x - t*49156;
-	  b = 49155 - b;
-	  b >>= 31;
-	  t -= b;
+	// Compute quotient = inputValue / (4 * PARAM_Q);
+	borrow = inputValue * PARAM_R;
+	quotient = borrow >> PARAM_LOG2_4Q;
+	borrow = inputValue - quotient * PARAM_4Q;
+	borrow = PARAM_4Q_MINUS_ONE - borrow;
+	borrow >>= PARAM_4Q_SHIFT;
+	quotient -= borrow;
 
-	  c = t & 1;
-	  t = (t >> 1) + c; // t = round(x/(8*PARAM_Q))
+	carry = quotient & 1;
+	quotient = (quotient >> 1) + carry; // quotient = round(inputValue / (8 * PARAM_Q))
 
-	  t *= 8*PARAM_Q;
+	quotient *= 8 * PARAM_Q;
 
-	  return abs(t - x);
-	}
+	return Math.abs(quotient - inputValue);
+}
 
 	private static int LDDecode(int xi0, int xi1, int xi2, int xi3)
 	{
 	  int t;
 
-	  t  = g(xi0);
-	  t += g(xi1);
-	  t += g(xi2);
-	  t += g(xi3);
+	  t  = calculateGAndRound(xi0);
+	  t += calculateGAndRound(xi1);
+	  t += calculateGAndRound(xi2);
+	  t += calculateGAndRound(xi3);
 
 	  t -= 8*PARAM_Q;
 	  t >>= 31;
@@ -609,10 +634,10 @@ public class NewHope {
 		  {
 		    rbit = (rand[i>>3] >> (i&7)) & 1;
 	
-		    k  = f(v0,0, v0,4, 8*v.coeffs[  0+i] + 4*rbit);
-		    k += f(v0,1, v0,5, 8*v.coeffs[256+i] + 4*rbit);
-		    k += f(v0,2, v0,6, 8*v.coeffs[512+i] + 4*rbit);
-		    k += f(v0,3, v0,7, 8*v.coeffs[768+i] + 4*rbit);
+		    k  = calculateFAndRound(v0,0, v0,4, 8*v.coeffs[  0+i] + 4*rbit);
+		    k += calculateFAndRound(v0,1, v0,5, 8*v.coeffs[256+i] + 4*rbit);
+		    k += calculateFAndRound(v0,2, v0,6, 8*v.coeffs[512+i] + 4*rbit);
+		    k += calculateFAndRound(v0,3, v0,7, 8*v.coeffs[768+i] + 4*rbit);
 	
 		    k = (2*PARAM_Q-1-k) >> 31;
 	

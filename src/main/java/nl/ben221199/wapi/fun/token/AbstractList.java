@@ -5,6 +5,7 @@ import java.util.List;
 
 public abstract class AbstractList extends Token{
 
+	protected short length;
 	protected List<Token> items = new ArrayList<>();
 
 	public AbstractList(byte token){

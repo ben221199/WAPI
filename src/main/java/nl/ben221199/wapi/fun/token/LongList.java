@@ -6,7 +6,7 @@ import java.util.List;
 
 public class LongList extends AbstractList{
 
-	protected short length;
+//	protected short length;
 
 	public LongList(){
 		super((byte) 0xF9);

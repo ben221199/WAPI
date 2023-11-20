@@ -25,7 +25,9 @@ public class NoiseInputStream extends SegmentInputStream{
 		if(segment==null){
 			return null;
 		}
-		byte[] plaintext = new byte[segment.length+1024];
+		final int additionalBuffer = 1024;
+		byte[] plaintext = new byte[segment.length + additionalBuffer];
+
 		int length = 0;
 		try{
 			length = this.cipherState.decryptWithAd(new byte[0],segment,0,plaintext,0,segment.length);

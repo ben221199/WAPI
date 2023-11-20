@@ -6,7 +6,7 @@ import java.util.List;
 
 public class ShortList extends AbstractList{
 
-	protected byte length;
+	//protected byte length;
 
 	public ShortList(){
 		super((byte) 0xF8);
