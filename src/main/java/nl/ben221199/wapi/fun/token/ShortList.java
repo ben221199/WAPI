@@ -7,6 +7,7 @@ import java.util.List;
 public class ShortList extends AbstractList{
 
 	protected byte length;
+	String className = "ShortList";
 
 	public ShortList(){
 		super((byte) 0xF8);
@@ -30,12 +31,5 @@ public class ShortList extends AbstractList{
 		return baos.toByteArray();
 	}
 
-	@Override
-	public String toString() {
-		return "ShortList{" +
-				"length=" + length +
-				", items=" + items +
-				'}';
-	}
 
 }

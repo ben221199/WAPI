@@ -181,58 +181,122 @@ public class JSONSignalStore implements SignalProtocolStore{
 		this.signedPreKeys.remove(i);
 	}
 
-	private JSONObject getJSON(){
+	private JSONObject getJSON() {
 		JSONObject json = new JSONObject();
 
-		if(this.identityKeyPair!=null){
-			json.put("identityKeyPair",Base64.encode(identityKeyPair.serialize()));
-		}
-		json.put("localRegistrationId",localRegistrationId);
-		if(!this.identities.isEmpty()){
-			JSONArray identitiesArr = new JSONArray();
-			for(Map.Entry<SignalProtocolAddress,IdentityKey> entry : this.identities.entrySet()){
-				JSONObject obj = new JSONObject();
-				obj.put("name",entry.getKey().getName());
-				obj.put("device",entry.getKey().getDeviceId());
-				obj.put("identityKey",Base64.encode(entry.getValue().serialize()));
-				identitiesArr.put(obj);
-			}
-			json.put("identities",identitiesArr);
-		}
-		if(!this.preKeys.isEmpty()){
-			JSONArray identitiesArr = new JSONArray();
-			for(Map.Entry<Integer,PreKeyRecord> entry : this.preKeys.entrySet()){
-				JSONObject obj = new JSONObject();
-				obj.put("index",entry.getKey());
-				obj.put("preKey",Base64.encode(entry.getValue().serialize()));
-				identitiesArr.put(obj);
-			}
-			json.put("preKeys",identitiesArr);
-		}
-		if(!this.sessions.isEmpty()){
-			JSONArray sessionsArr = new JSONArray();
-			for(Map.Entry<SignalProtocolAddress,SessionRecord> entry : this.sessions.entrySet()){
-				JSONObject obj = new JSONObject();
-				obj.put("name",entry.getKey().getName());
-				obj.put("device",entry.getKey().getDeviceId());
-				obj.put("session",Base64.encode(entry.getValue().serialize()));
-				sessionsArr.put(obj);
-			}
-			json.put("sessions",sessionsArr);
-		}
-		if(!this.signedPreKeys.isEmpty()){
-			JSONArray identitiesArr = new JSONArray();
-			for(Map.Entry<Integer,SignedPreKeyRecord> entry : this.signedPreKeys.entrySet()){
-				JSONObject obj = new JSONObject();
-				obj.put("index",entry.getKey());
-				obj.put("signedPreKey",Base64.encode(entry.getValue().serialize()));
-				identitiesArr.put(obj);
-			}
-			json.put("signedPreKeys",identitiesArr);
-		}
+		addIdentityKeyPair(json);
+		json.put("localRegistrationId", localRegistrationId);
+		addIdentities(json);
+		addPreKeys(json);
+		addSessions(json);
+		addSignedPreKeys(json);
 
 		return json;
 	}
+
+	private void addIdentityKeyPair(JSONObject json) {
+		if (this.identityKeyPair != null) {
+			json.put("identityKeyPair", Base64.encode(identityKeyPair.serialize()));
+		}
+	}
+
+	private void addIdentities(JSONObject json) {
+		if (!this.identities.isEmpty()) {
+			JSONArray identitiesArr = createJSONArrayForIdentities();
+			json.put("identities", identitiesArr);
+		}
+	}
+
+	private JSONArray createJSONArrayForIdentities() {
+		JSONArray identitiesArr = new JSONArray();
+		for (Map.Entry<SignalProtocolAddress, IdentityKey> entry : this.identities.entrySet()) {
+			JSONObject obj = createJSONObjectForIdentity(entry);
+			identitiesArr.put(obj);
+		}
+		return identitiesArr;
+	}
+
+	private JSONObject createJSONObjectForIdentity(Map.Entry<SignalProtocolAddress, IdentityKey> entry) {
+		JSONObject obj = new JSONObject();
+		obj.put("name", entry.getKey().getName());
+		obj.put("device", entry.getKey().getDeviceId());
+		obj.put("identityKey", Base64.encode(entry.getValue().serialize()));
+		return obj;
+	}
+
+	private void addPreKeys(JSONObject json) {
+		if (!this.preKeys.isEmpty()) {
+			JSONArray preKeysArr = createJSONArrayForPreKeys();
+			json.put("preKeys", preKeysArr);
+		}
+	}
+
+	private JSONArray createJSONArrayForPreKeys() {
+		JSONArray preKeysArr = new JSONArray();
+		for (Map.Entry<Integer, PreKeyRecord> entry : this.preKeys.entrySet()) {
+			JSONObject obj = createJSONObjectForPreKey(entry);
+			preKeysArr.put(obj);
+		}
+		return preKeysArr;
+	}
+
+	private JSONObject createJSONObjectForPreKey(Map.Entry<Integer, PreKeyRecord> entry) {
+		JSONObject obj = new JSONObject();
+		obj.put("index", entry.getKey());
+		obj.put("preKey", Base64.encode(entry.getValue().serialize()));
+		return obj;
+	}
+
+	private void addSessions(JSONObject json) {
+		if (!this.sessions.isEmpty()) {
+			JSONArray sessionsArr = createJSONArrayForSessions();
+			json.put("sessions", sessionsArr);
+		}
+	}
+
+	private JSONArray createJSONArrayForSessions() {
+		JSONArray sessionsArr = new JSONArray();
+		for (Map.Entry<SignalProtocolAddress, SessionRecord> entry : this.sessions.entrySet()) {
+			JSONObject obj = createJSONObjectForSession(entry);
+			sessionsArr.put(obj);
+		}
+		return sessionsArr;
+	}
+
+	private JSONObject createJSONObjectForSession(Map.Entry<SignalProtocolAddress, SessionRecord> entry) {
+		JSONObject obj = new JSONObject();
+		obj.put("name", entry.getKey().getName());
+		obj.put("device", entry.getKey().getDeviceId());
+		obj.put("session", Base64.encode(entry.getValue().serialize()));
+		return obj;
+	}
+
+	private void addSignedPreKeys(JSONObject json) {
+		if (!this.signedPreKeys.isEmpty()) {
+			JSONArray signedPreKeysArr = createJSONArrayForSignedPreKeys();
+			json.put("signedPreKeys", signedPreKeysArr);
+		}
+	}
+
+	private JSONArray createJSONArrayForSignedPreKeys() {
+		JSONArray signedPreKeysArr = new JSONArray();
+		for (Map.Entry<Integer, SignedPreKeyRecord> entry : this.signedPreKeys.entrySet()) {
+			JSONObject obj = createJSONObjectForSignedPreKey(entry);
+			signedPreKeysArr.put(obj);
+		}
+		return signedPreKeysArr;
+	}
+
+	private JSONObject createJSONObjectForSignedPreKey(Map.Entry<Integer, SignedPreKeyRecord> entry) {
+		JSONObject obj = new JSONObject();
+		obj.put("index", entry.getKey());
+		obj.put("signedPreKey", Base64.encode(entry.getValue().serialize()));
+		return obj;
+	}
+
+
+
+
 
 	private JSONSignalStore setJSON(JSONObject json){
 		this.reset();

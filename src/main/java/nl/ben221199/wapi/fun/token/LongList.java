@@ -6,7 +6,7 @@ import java.util.List;
 
 public class LongList extends AbstractList{
 
-	protected short length;
+	String className = "LongList";
 
 	public LongList(){
 		super((byte) 0xF9);
@@ -30,12 +30,5 @@ public class LongList extends AbstractList{
 		return baos.toByteArray();
 	}
 
-	@Override
-	public String toString() {
-		return "LongList{" +
-				"length=" + length +
-				", items=" + items +
-				'}';
-	}
 
 }

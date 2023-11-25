@@ -645,12 +645,10 @@ public class HandshakeState implements Destroyable {
 	    // handshake message from the initiator.  We also allow the
 	    // responder to fallback after processing the first message
 	    // successfully; it decides to always fall back anyway.
-		if (isInitiator) {
-			if ((action != FAILED && action != READ_MESSAGE) || !localEphemeral.hasPublicKey())
-				throw new IllegalStateException("Initiator cannot fall back from this state");
-		} else {
-			if ((action != FAILED && action != WRITE_MESSAGE) || !remoteEphemeral.hasPublicKey())
-				throw new IllegalStateException("Responder cannot fall back from this state");
+		if (isInitiator && !canInitiatorFallback()) {
+			throw new IllegalStateException("Initiator cannot fall back from this state");
+		} else if (!isInitiator && !canResponderFallback()) {
+			throw new IllegalStateException("Responder cannot fall back from this state");
 		}
 
 		// Format a new protocol name for the fallback variant
@@ -695,6 +693,14 @@ public class HandshakeState implements Destroyable {
 			flags = Pattern.reverseFlags(flags);
 		}
 		requirements = computeRequirements(flags, components[0], isInitiator ? INITIATOR : RESPONDER, true);
+	}
+
+	private boolean canInitiatorFallback() {
+		return (action != FAILED && action != READ_MESSAGE) || !localEphemeral.hasPublicKey();
+	}
+
+	private boolean canResponderFallback() {
+		return (action != FAILED && action != WRITE_MESSAGE) || !remoteEphemeral.hasPublicKey();
 	}
 
 	/**
